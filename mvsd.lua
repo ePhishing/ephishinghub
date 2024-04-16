@@ -429,6 +429,22 @@ local function resetCooldown()
             local currentCooldown = tool:GetAttribute("Cooldown") or 0 -- Retrieve current cooldown or default to 0
             tool:SetAttribute("Cooldown", 0)  -- Set the "Cooldown" attribute to 0 (a number)
             print("Cooldown of " .. tool.Name .. " reset from " .. currentCooldown .. " to 0.")
+            
+            -- Check if the tool is already in the backpack
+            local backpack = player.Backpack
+            if not backpack:FindFirstChild(tool.Name) then
+                -- Put the tool back into the backpack
+                tool.Parent = backpack
+            end
+            
+            -- Unequip the tool if currently equipped
+            if tool.Parent == character then
+                tool.Parent = backpack
+                wait(0.1) -- Wait for a short duration before equipping again
+            end
+            
+            -- Equip the tool again
+            tool.Parent = character
         else
             print("No tool equipped.")
         end
@@ -437,34 +453,10 @@ local function resetCooldown()
     end
 end
 
--- Function to continuously reset the cooldown attribute of the held tool to 0
-local function continuousCooldownReset()
-    while cooldownResetEnabled do
-        local player = game:GetService("Players").LocalPlayer
-        local character = player.Character
-        if character then
-            local tool = character:FindFirstChildOfClass("Tool") -- Find the tool currently equipped
-            if not tool then
-                resetCooldown() -- Call the function to reset the cooldown if the tool is not equipped
-            end
-        end
-        wait(1) -- Wait for a brief interval before checking again
-    end
-end
-
--- Toggle to enable/disable continuous cooldown reset
-local cooldownResetEnabled = false
-local ToggleCooldownReset = Tab4Section:NewToggle("Toggle Cooldown Reset", "Toggle continuous cooldown reset On/Off", function(state)
-    cooldownResetEnabled = state  -- Update the state of the toggle
-    if cooldownResetEnabled then
-        -- Start the continuous reset process in a coroutine
-        coroutine.wrap(continuousCooldownReset)()
-    end
+-- Create a button in the GUI to reset the cooldown of the held tool
+Tab4Section:NewButton("Reset Cooldown", "Reset the cooldown of the held tool", function()
+    resetCooldown()
 end)
-
--- Call the function to reset the cooldown when the toggle is turned on
-ToggleCooldownReset:SetOn(true)
-resetCooldown()
 
 
 -- Keep applying Hitbox and ESP settings
