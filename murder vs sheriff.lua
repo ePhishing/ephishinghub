@@ -1,5 +1,4 @@
 --https://discord.gg/BhwrB6ex
---Discord: FedPal
 -- Edu Purposes Only
 -- Dont use for tournaments
 
