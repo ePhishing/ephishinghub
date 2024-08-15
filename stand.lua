@@ -7,6 +7,7 @@ local BodyVelocity = nil
 local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
 local TargetHRP = nil
 local LastTargetPosition = nil
+local StabilityThreshold = 0.1 -- Movement threshold to check if target is moving
 
 -- Leviathan Animation IDs
 local LevitationAnimID = "rbxassetid://619543721"
@@ -56,9 +57,10 @@ local function floatBehind(targetPlayer)
 
             local targetHRP = targetPlayer.Character.HumanoidRootPart
             local currentPosition = targetHRP.Position
+            local targetPosition = TargetHRP.Position
             
             -- Check if the target is moving
-            if (currentPosition - LastTargetPosition).magnitude > 0.1 then
+            if (currentPosition - LastTargetPosition).magnitude > StabilityThreshold then
                 -- Position the local player 3 studs above and 5 studs behind the target
                 LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
                 -- Update BodyVelocity to move towards the floating position
@@ -73,6 +75,10 @@ local function floatBehind(targetPlayer)
                 
                 -- Update the last target position
                 LastTargetPosition = currentPosition
+            else
+                -- If the target is idle, maintain the local player's position
+                BodyVelocity.Velocity = Vector3.new(0, 0, 0)
+                LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
             end
         end)
     end
