@@ -8,6 +8,9 @@ local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild(
 local TargetHRP = nil
 local LastTargetPosition = nil
 local StabilityThreshold = 0.1 -- Movement threshold to check if target is moving
+local BobbingAmplitude = 1 -- Amplitude of the bobbing effect
+local BobbingFrequency = 1 -- Frequency of the bobbing effect
+local BobbingOffset = 3 -- Starting height for bobbing effect
 
 -- Leviathan Animation IDs
 local LevitationAnimID = "rbxassetid://619543721"
@@ -32,7 +35,7 @@ local function floatBehind(targetPlayer)
     local targetHumanoid = targetCharacter:FindFirstChild("Humanoid")
     
     -- Set initial position behind and above the target
-    LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
+    LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, BobbingOffset, 0)
 
     Floating = true
 
@@ -62,7 +65,7 @@ local function floatBehind(targetPlayer)
             -- Check if the target is moving
             if (currentPosition - LastTargetPosition).magnitude > StabilityThreshold then
                 -- Position the local player 3 studs above and 5 studs behind the target
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 3 + Vector3.new(0, 3, 0)
+                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, BobbingOffset, 0)
                 -- Update BodyVelocity to move towards the floating position
                 local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 0.5 -- Adjusted for controlled movement
                 BodyVelocity.Velocity = desiredVelocity
@@ -76,9 +79,12 @@ local function floatBehind(targetPlayer)
                 -- Update the last target position
                 LastTargetPosition = currentPosition
             else
-                -- If the target is idle, maintain the local player's position
-                BodyVelocity.Velocity = Vector3.new(0, 0, 0)
-                LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
+                -- If the target is idle, apply bobbing effect
+                local time = tick()
+                local bobbingOffset = math.sin(time * BobbingFrequency) * BobbingAmplitude
+                -- Update the position with bobbing effect
+                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, BobbingOffset + bobbingOffset, 0)
+                BodyVelocity.Velocity = Vector3.new(0, 0, 0) -- Stop any unwanted movement
             end
         end)
     end
