@@ -4,7 +4,6 @@ local LocalPlayer = Players.LocalPlayer
 local HostUsername = "notephishing" -- Replace with the actual host username
 local Floating = false
 local BodyVelocity = nil
-local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
 local TargetHRP = nil
 local LastTargetPosition = nil
 local StabilityThreshold = 0.1 -- Movement threshold to check if target is moving
@@ -27,31 +26,45 @@ local function setupBodyVelocity()
     BodyVelocity.Parent = LocalPlayer.Character.HumanoidRootPart
 end
 
+-- Helper function to stop all default animations and apply Leviathan animations
+local function applyLeviathanAnimations()
+    local humanoid = LocalPlayer.Character:WaitForChild("Humanoid")
+    local animator = humanoid:WaitForChild("Animator")
+
+    -- Stop all animation tracks
+    for _, playingTrack in animator:GetPlayingAnimationTracks() do
+        playingTrack:Stop(0)
+    end
+
+    local animateScript = LocalPlayer.Character:WaitForChild("Animate")
+    animateScript.run.RunAnim.AnimationId = LevitationAnimID
+    --animateScript.walk.WalkAnim.AnimationId = "rbxassetid://"
+    --animateScript.jump.JumpAnim.AnimationId = "rbxassetid://"
+    --animateScript.idle.Animation1.AnimationId = "rbxassetid://"
+    --animateScript.idle.Animation2.AnimationId = "rbxassetid://"
+    animateScript.fall.FallAnim.AnimationId = FallingAnimID
+    --animateScript.swim.Swim.AnimationId = "rbxassetid://"
+    --animateScript.swimidle.SwimIdle.AnimationId = "rbxassetid://"
+    --animateScript.climb.ClimbAnim.AnimationId = "rbxassetid://"
+end
+
 local function floatBehind(targetPlayer)
     local targetCharacter = targetPlayer.Character
     if not targetCharacter or not targetCharacter:FindFirstChild("HumanoidRootPart") then return end
 
     TargetHRP = targetCharacter.HumanoidRootPart
     LastTargetPosition = TargetHRP.Position
-    local targetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-    
+
     -- Set initial position behind and above the target
-    LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, BobbingOffset, 0)
+    LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 4 + Vector3.new(0, BobbingOffset, 0)
 
     Floating = true
 
     -- Create and set up BodyVelocity
     setupBodyVelocity()
 
-    -- Load levitation animation
-    local Levitation = Instance.new("Animation")
-    Levitation.AnimationId = LevitationAnimID
-    local LevitationAnim = LocalPlayer.Character.Humanoid:FindFirstChildOfClass("Animator"):LoadAnimation(Levitation)
-    
-    -- Load falling animation
-    local Falling = Instance.new("Animation")
-    Falling.AnimationId = FallingAnimID
-    local FallingAnim = LocalPlayer.Character.Humanoid:FindFirstChildOfClass("Animator"):LoadAnimation(Falling)
+    -- Apply Leviathan animations
+    applyLeviathanAnimations()
 
     -- Function to update floating position smoothly
     local function updateFloatingPosition()
@@ -59,21 +72,18 @@ local function floatBehind(targetPlayer)
             if not Floating or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 if BodyVelocity then BodyVelocity:Destroy() end
                 Floating = false
-                -- Stop levitation animation
-                LevitationAnim:Stop()
-                -- Stop falling animation
-                FallingAnim:Stop()
+                -- Ensure falling animation stops if floating stops
+                LocalPlayer.Character.Humanoid:StopAnimation(FallingAnimID)
                 return
             end
 
             local targetHRP = targetPlayer.Character.HumanoidRootPart
             local currentPosition = targetHRP.Position
-            local targetPosition = TargetHRP.Position
-            
+
             -- Check if the target is moving
             if (currentPosition - LastTargetPosition).magnitude > StabilityThreshold then
                 -- Position the local player 3 studs above and 5 studs behind the target
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, BobbingOffset, 0)
+                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 4 + Vector3.new(0, BobbingOffset, 0)
                 -- Update BodyVelocity to move towards the floating position
                 local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 0.5 -- Adjusted for controlled movement
                 BodyVelocity.Velocity = desiredVelocity
@@ -82,7 +92,7 @@ local function floatBehind(targetPlayer)
                 LocalPlayer.Character.Humanoid.JumpPower = 0
                 LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
                 -- Play levitation animation
-                LevitationAnim:Play()
+                LocalPlayer.Character.Humanoid:LoadAnimation(LevitationAnimID):Play()
                 
                 -- Update the last target position
                 LastTargetPosition = currentPosition
@@ -91,13 +101,11 @@ local function floatBehind(targetPlayer)
                 local time = tick()
                 local bobbingOffset = math.sin(time * BobbingFrequency) * BobbingAmplitude
                 -- Update the position with bobbing effect
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, BobbingOffset + bobbingOffset, 0)
+                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 4 + Vector3.new(0, BobbingOffset + bobbingOffset, 0)
                 BodyVelocity.Velocity = Vector3.new(0, 0, 0) -- Stop any unwanted movement
                 
                 -- Play falling animation continuously
-                if not FallingAnim.IsPlaying then
-                    FallingAnim:Play()
-                end
+                LocalPlayer.Character.Humanoid:LoadAnimation(FallingAnimID):Play()
             end
         end)
     end
@@ -112,16 +120,15 @@ local function stopFloating()
         BodyVelocity = nil
     end
     Floating = false
-    if Humanoid then
-        Humanoid.UseJumpPower = true
-        Humanoid.JumpPower = 50 -- Set to default or desired value
-        Humanoid.WalkSpeed = 16 -- Set to default or desired value
-        Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.UseJumpPower = true
+        LocalPlayer.Character.Humanoid.JumpPower = 50 -- Set to default or desired value
+        LocalPlayer.Character.Humanoid.WalkSpeed = 16 -- Set to default or desired value
+        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
     -- Ensure falling animation stops if floating stops
-    local FallingAnim = LocalPlayer.Character.Humanoid:FindFirstChildOfClass("Animator"):FindFirstChild("Falling")
-    if FallingAnim then
-        FallingAnim:Stop()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid:StopAnimation(FallingAnimID)
     end
 end
 
