@@ -46,12 +46,12 @@ local function floatBehind(targetPlayer)
     -- Load levitation animation
     local Levitation = Instance.new("Animation")
     Levitation.AnimationId = LevitationAnimID
-    local LevitationAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Levitation)
+    local LevitationAnim = LocalPlayer.Character.Humanoid:FindFirstChildOfClass("Animator"):LoadAnimation(Levitation)
     
     -- Load falling animation
     local Falling = Instance.new("Animation")
     Falling.AnimationId = FallingAnimID
-    local FallingAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Falling)
+    local FallingAnim = LocalPlayer.Character.Humanoid:FindFirstChildOfClass("Animator"):LoadAnimation(Falling)
 
     -- Function to update floating position smoothly
     local function updateFloatingPosition()
@@ -61,6 +61,8 @@ local function floatBehind(targetPlayer)
                 Floating = false
                 -- Stop levitation animation
                 LevitationAnim:Stop()
+                -- Stop falling animation
+                FallingAnim:Stop()
                 return
             end
 
@@ -117,7 +119,7 @@ local function stopFloating()
         Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
     -- Ensure falling animation stops if floating stops
-    local FallingAnim = LocalPlayer.Character.Humanoid.Animator:FindFirstChildOfClass("Animation")
+    local FallingAnim = LocalPlayer.Character.Humanoid:FindFirstChildOfClass("Animator"):FindFirstChild("Falling")
     if FallingAnim then
         FallingAnim:Stop()
     end
