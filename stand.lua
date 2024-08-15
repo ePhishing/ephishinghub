@@ -17,8 +17,8 @@ local function setupBodyVelocity()
         BodyVelocity:Destroy()
     end
     BodyVelocity = Instance.new("BodyVelocity")
-    BodyVelocity.Velocity = Vector3.new(0, 0.1, 0)
-    BodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9) -- Adjusted for smoother movement
+    BodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    BodyVelocity.MaxForce = Vector3.new(0, 0, 0) -- Adjusted for smoother movement
     BodyVelocity.Parent = LocalPlayer.Character.HumanoidRootPart
 end
 
