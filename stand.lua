@@ -8,6 +8,12 @@ local BodyVelocity = nil
 local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
 local TargetHRP = nil
 
+-- Animation IDs
+local HoverAnimID = "rbxassetid://17402721184"
+local FlyAnimID = "rbxassetid://17402055688"
+local FlylAnimID = "rbxassetid://17402082521"
+local FlyrAnimID = "rbxassetid://17402066227"
+
 -- Helper function to create and set up BodyVelocity
 local function setupBodyVelocity()
     if BodyVelocity then
@@ -38,12 +44,32 @@ local function floatBehind(targetPlayer)
     -- Create and set up BodyVelocity
     setupBodyVelocity()
 
+    -- Load animations
+    local Hover = Instance.new("Animation")
+    Hover.AnimationId = HoverAnimID
+    local Fly = Instance.new("Animation")
+    Fly.AnimationId = FlyAnimID
+    local FlyR = Instance.new("Animation")
+    FlyR.AnimationId = FlyrAnimID
+    local FlyL = Instance.new("Animation")
+    FlyL.AnimationId = FlylAnimID
+
+    local HoverAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Hover)
+    local FlyAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Fly)
+    local FlyLAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(FlyL)
+    local FlyRAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(FlyR)
+
     -- Function to update floating position smoothly
     local function updateFloatingPosition()
         RunService.Stepped:Connect(function()
             if not Floating or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 if BodyVelocity then BodyVelocity:Destroy() end
                 Floating = false
+                -- Stop all animations
+                HoverAnim:Stop()
+                FlyAnim:Stop()
+                FlyLAnim:Stop()
+                FlyRAnim:Stop()
                 return
             end
 
@@ -57,8 +83,8 @@ local function floatBehind(targetPlayer)
             LocalPlayer.Character.Humanoid.WalkSpeed = targetWalkSpeed
             LocalPlayer.Character.Humanoid.JumpPower = targetJumpPower
             LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-            -- Set the humanoid's animation state to idle
-            LocalPlayer.Character.Humanoid:LoadAnimation(game.ServerStorage:FindFirstChild("IdleAnimation")) -- Ensure you have an IdleAnimation stored
+            -- Play Hover animation
+            HoverAnim:Play()
         end)
     end
 
