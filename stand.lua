@@ -62,7 +62,7 @@ local function floatBehind(targetPlayer)
             -- Check if the target is moving
             if (currentPosition - LastTargetPosition).magnitude > StabilityThreshold then
                 -- Position the local player 3 studs above and 5 studs behind the target
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
+                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 3 + Vector3.new(0, 3, 0)
                 -- Update BodyVelocity to move towards the floating position
                 local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 0.5 -- Adjusted for controlled movement
                 BodyVelocity.Velocity = desiredVelocity
