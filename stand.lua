@@ -199,8 +199,6 @@ local function onChatted(player, message)
                     Font = Enum.Font.SourceSansBold;
                     TextSize = 24;
                 })
-                wait(3)
-                rejoinGame()
                 return
             end
         end
@@ -223,6 +221,15 @@ local function onChatted(player, message)
             stopCameraLock()
         end
     end
+
+       -- Check if the message is a rejoin command
+    local rejoinPatterns = {".rejoin ", "rejoin ", "!rejoin ", "rejoin!"}
+    for _, pattern in ipairs(rejoinPatterns) do
+        if string.sub(message, 1, string.len(pattern)) == pattern then
+            rejoinGame()
+        end
+    end
+
 
     -- Check for .spin command
     if string.sub(message, 1, 6) == ".spin " then
