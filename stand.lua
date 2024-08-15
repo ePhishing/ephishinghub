@@ -1,12 +1,12 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 local HostUsername = "notephishing" -- Replace with the actual host username
 local Floating = false
 local BodyVelocity = nil
 local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
 local TargetHRP = nil
+local LastTargetPosition = nil
 
 -- Leviathan Animation IDs
 local LevitationAnimID = "rbxassetid://619543721"
@@ -18,8 +18,7 @@ local function setupBodyVelocity()
     end
     BodyVelocity = Instance.new("BodyVelocity")
     BodyVelocity.Velocity = Vector3.new(0, 0, 0)
-    BodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000) -- Adjusted for controlled movement
-    BodyVelocity.P = 1000 -- Adjusted for smoother movement
+    BodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000) -- Adjusted for smoother movement
     BodyVelocity.Parent = LocalPlayer.Character.HumanoidRootPart
 end
 
@@ -28,7 +27,9 @@ local function floatBehind(targetPlayer)
     if not targetCharacter or not targetCharacter:FindFirstChild("HumanoidRootPart") then return end
 
     TargetHRP = targetCharacter.HumanoidRootPart
-
+    LastTargetPosition = TargetHRP.Position
+    local targetHumanoid = targetCharacter:FindFirstChild("Humanoid")
+    
     -- Set initial position behind and above the target
     LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
 
@@ -54,19 +55,25 @@ local function floatBehind(targetPlayer)
             end
 
             local targetHRP = targetPlayer.Character.HumanoidRootPart
-            -- Position the local player 3 studs above and 5 studs behind the target
-            LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
+            local currentPosition = targetHRP.Position
             
-            -- Ensure local player is idle and stationary
-            LocalPlayer.Character.Humanoid.WalkSpeed = 0
-            LocalPlayer.Character.Humanoid.JumpPower = 0
-            LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-
-            -- Update BodyVelocity to move towards the floating position
-            BodyVelocity.Velocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 0.5 -- Adjusted for controlled movement
-            
-            -- Play levitation animation
-            LevitationAnim:Play()
+            -- Check if the target is moving
+            if (currentPosition - LastTargetPosition).magnitude > 0.1 then
+                -- Position the local player 3 studs above and 5 studs behind the target
+                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
+                -- Update BodyVelocity to move towards the floating position
+                local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 0.5 -- Adjusted for controlled movement
+                BodyVelocity.Velocity = desiredVelocity
+                -- Match target's walk speed and jump power but keep local player stationary
+                LocalPlayer.Character.Humanoid.WalkSpeed = 0
+                LocalPlayer.Character.Humanoid.JumpPower = 0
+                LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                -- Play levitation animation
+                LevitationAnim:Play()
+                
+                -- Update the last target position
+                LastTargetPosition = currentPosition
+            end
         end)
     end
 
