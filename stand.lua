@@ -18,7 +18,8 @@ local function setupBodyVelocity()
     end
     BodyVelocity = Instance.new("BodyVelocity")
     BodyVelocity.Velocity = Vector3.new(0, 0, 0)
-    BodyVelocity.MaxForce = Vector3.new(0, 0, 0) -- Adjusted for smoother movement
+    BodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000) -- Adjusted for controlled movement
+    BodyVelocity.P = 1000 -- Adjusted for smoother movement
     BodyVelocity.Parent = LocalPlayer.Character.HumanoidRootPart
 end
 
@@ -27,11 +28,6 @@ local function floatBehind(targetPlayer)
     if not targetCharacter or not targetCharacter:FindFirstChild("HumanoidRootPart") then return end
 
     TargetHRP = targetCharacter.HumanoidRootPart
-    local targetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-    
-    -- Store target's walk speed and jump power
-    local targetWalkSpeed = targetHumanoid.WalkSpeed
-    local targetJumpPower = targetHumanoid.JumpPower
 
     -- Set initial position behind and above the target
     LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
@@ -60,14 +56,15 @@ local function floatBehind(targetPlayer)
             local targetHRP = targetPlayer.Character.HumanoidRootPart
             -- Position the local player 3 studs above and 5 studs behind the target
             LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
-            -- Update BodyVelocity to move towards the floating position
-            local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 10
-            BodyVelocity.Velocity = desiredVelocity
-
+            
             -- Ensure local player is idle and stationary
             LocalPlayer.Character.Humanoid.WalkSpeed = 0
             LocalPlayer.Character.Humanoid.JumpPower = 0
-            LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+            LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+            -- Update BodyVelocity to move towards the floating position
+            BodyVelocity.Velocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 0.5 -- Adjusted for controlled movement
+            
             -- Play levitation animation
             LevitationAnim:Play()
         end)
