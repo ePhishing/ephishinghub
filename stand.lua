@@ -59,11 +59,12 @@ local function floatBehind(targetPlayer)
 
             local targetHRP = targetPlayer.Character.HumanoidRootPart
             -- Position the local player 3 studs above and 5 studs behind the target
-            LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
+            LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
             -- Update BodyVelocity to move towards the floating position
             local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 10
             BodyVelocity.Velocity = desiredVelocity
-            -- Match target's walk speed and jump power but keep local player stationary
+
+            -- Ensure local player is idle and stationary
             LocalPlayer.Character.Humanoid.WalkSpeed = 0
             LocalPlayer.Character.Humanoid.JumpPower = 0
             LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
