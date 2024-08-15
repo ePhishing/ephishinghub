@@ -10,13 +10,6 @@ local TargetHRP = nil
 
 -- Leviathan Animation IDs
 local LevitationAnimID = "rbxassetid://619543721"
-local SwimAnimID = "rbxassetid://619542203"
-local IdleAnimID = "rbxassetid://619542203"
-local JumpAnimID = "rbxassetid://619542888"
-local FallAnimID = "rbxassetid://619541867"
-local WalkAnimID = "rbxassetid://619544080"
-local RunAnimID = "rbxassetid://619543231"
-local ClimbAnimID = "rbxassetid://619541458"
 
 -- Helper function to create and set up BodyVelocity
 local function setupBodyVelocity()
@@ -48,32 +41,10 @@ local function floatBehind(targetPlayer)
     -- Create and set up BodyVelocity
     setupBodyVelocity()
 
-    -- Load animations
+    -- Load levitation animation
     local Levitation = Instance.new("Animation")
     Levitation.AnimationId = LevitationAnimID
-    local Swim = Instance.new("Animation")
-    Swim.AnimationId = SwimAnimID
-    local Idle = Instance.new("Animation")
-    Idle.AnimationId = IdleAnimID
-    local Jump = Instance.new("Animation")
-    Jump.AnimationId = JumpAnimID
-    local Fall = Instance.new("Animation")
-    Fall.AnimationId = FallAnimID
-    local Walk = Instance.new("Animation")
-    Walk.AnimationId = WalkAnimID
-    local Run = Instance.new("Animation")
-    Run.AnimationId = RunAnimID
-    local Climb = Instance.new("Animation")
-    Climb.AnimationId = ClimbAnimID
-
     local LevitationAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Levitation)
-    local SwimAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Swim)
-    local IdleAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Idle)
-    local JumpAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Jump)
-    local FallAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Fall)
-    local WalkAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Walk)
-    local RunAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Run)
-    local ClimbAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Climb)
 
     -- Function to update floating position smoothly
     local function updateFloatingPosition()
@@ -81,15 +52,8 @@ local function floatBehind(targetPlayer)
             if not Floating or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 if BodyVelocity then BodyVelocity:Destroy() end
                 Floating = false
-                -- Stop all animations
+                -- Stop levitation animation
                 LevitationAnim:Stop()
-                SwimAnim:Stop()
-                IdleAnim:Stop()
-                JumpAnim:Stop()
-                FallAnim:Stop()
-                WalkAnim:Stop()
-                RunAnim:Stop()
-                ClimbAnim:Stop()
                 return
             end
 
@@ -99,11 +63,11 @@ local function floatBehind(targetPlayer)
             -- Update BodyVelocity to move towards the floating position
             local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 10
             BodyVelocity.Velocity = desiredVelocity
-            -- Match target's walk speed and jump power
-            LocalPlayer.Character.Humanoid.WalkSpeed = targetWalkSpeed
-            LocalPlayer.Character.Humanoid.JumpPower = targetJumpPower
+            -- Match target's walk speed and jump power but keep local player stationary
+            LocalPlayer.Character.Humanoid.WalkSpeed = 0
+            LocalPlayer.Character.Humanoid.JumpPower = 0
             LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-            -- Play Levitation animation
+            -- Play levitation animation
             LevitationAnim:Play()
         end)
     end
