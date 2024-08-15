@@ -14,6 +14,8 @@ local Spinning = false
 local SpinSpeed = 10 -- Speed of the spinning motion
 local SpinRadius = 10 -- Radius of the spinning motion
 local TargetPlayer = nil
+local cameraConnection -- Used to disconnect camera lock
+local floatingConnection -- Used to disconnect floating motion
 
 -- Leviathan Animation IDs
 local LevitationAnimID = "rbxassetid://619543721"
@@ -72,7 +74,7 @@ local function floatBehind(targetPlayer)
 
     -- Function to update floating position smoothly
     local function updateFloatingPosition()
-        RunService.Stepped:Connect(function()
+        floatingConnection = RunService.Stepped:Connect(function()
             if not Floating or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 if BodyVelocity then BodyVelocity:Destroy() end
                 Floating = false
@@ -118,6 +120,16 @@ local function floatBehind(targetPlayer)
     updateFloatingPosition()
 end
 
+local function stopFloating()
+    if floatingConnection then
+        floatingConnection:Disconnect()
+        floatingConnection = nil
+    end
+    Floating = false
+    if BodyVelocity then
+        BodyVelocity:Destroy()
+    end
+end
 
 local function lockCameraOnTarget(targetPlayer)
     TargetPlayer = targetPlayer
@@ -134,7 +146,7 @@ local function lockCameraOnTarget(targetPlayer)
     local function updateCamera()
         local startTime = tick()
 
-        RunService.RenderStepped:Connect(function()
+        cameraConnection = RunService.RenderStepped:Connect(function()
             if not Spinning or not TargetPlayer.Character or not TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 return
             end
@@ -162,9 +174,12 @@ local function lockCameraOnTarget(targetPlayer)
     updateCamera()
 end
 
-
 -- Function to stop the camera lock and spinning
 local function stopCameraLock()
+    if cameraConnection then
+        cameraConnection:Disconnect()
+        cameraConnection = nil
+    end
     Spinning = false
 end
 
@@ -190,52 +205,40 @@ local function onChatted(player, message)
         end
     end
 
-    -- Check for the .goto command
-    if string.sub(message, 1, 6) == ".goto " then
-        local targetUsername = string.sub(message, 7)
+    -- Float behind the target if the command is .goto
+    local gotoPattern = ".goto "
+    if string.sub(message, 1, string.len(gotoPattern)) == gotoPattern then
+        local targetUsername = string.sub(message, string.len(gotoPattern) + 1)
         local targetPlayer = Players:FindFirstChild(targetUsername)
         if targetPlayer then
             floatBehind(targetPlayer)
         end
+        return
     end
 
-    -- Check for the .stop command
-    local stopPatterns = {".stop", "stop", "!stop", "stop!", "stop.", "!stop."}
-    for _, pattern in ipairs(stopPatterns) do
-        if message == pattern then
-            stopFloating()
-            stopCameraLock()
-        end
-    end
-
-       -- Check if the message is a rejoin command
-    local rejoinPatterns = {".rejoin ", "rejoin ", "!rejoin ", "rejoin!"}
-    for _, pattern in ipairs(rejoinPatterns) do
-        if string.sub(message, 1, string.len(pattern)) == pattern then
-            rejoinGame()
-        end
-    end
-
-
-    -- Check for .spin command
-    if string.sub(message, 1, 6) == ".spin " then
-        local targetUsername = string.sub(message, 7)
+    -- Spin around the target if the command is .spin
+    local spinPattern = ".spin "
+    if string.sub(message, 1, string.len(spinPattern)) == spinPattern then
+        local targetUsername = string.sub(message, string.len(spinPattern) + 1)
         local targetPlayer = Players:FindFirstChild(targetUsername)
         if targetPlayer then
             lockCameraOnTarget(targetPlayer)
         end
+        return
+    end
+
+    -- Stop floating and spinning if the command is stop
+    if message == "stop" or message == "!stop" or message == "stop!" or message == ".stop" or message == "stop." then
+        stopFloating()
+        stopCameraLock()
+        return
     end
 end
 
--- Connect chat events
-for _, player in ipairs(Players:GetPlayers()) do
-    player.Chatted:Connect(function(message) onChatted(player, message) end)
-end
-Players.PlayerAdded:Connect(function(player)
-    player.Chatted:Connect(function(message) onChatted(player, message) end)
+-- Connect the onChatted function to the Chatted event
+Players.PlayerChatted:Connect(function(player, message)
+    onChatted(player, message)
 end)
 
--- Ensure that body velocity is reset upon respawn
-LocalPlayer.CharacterAdded:Connect(function(character)
-    setupBodyVelocity()
-end)
+-- Automatically apply the Leviathan animations when the player's character is added
+LocalPlayer.CharacterAdded:Connect(applyLeviathanAnimations)
