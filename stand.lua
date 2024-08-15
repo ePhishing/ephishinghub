@@ -130,10 +130,6 @@ local function stopFloating()
         LocalPlayer.Character.Humanoid.WalkSpeed = 16 -- Set to default or desired value
         LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
-    -- Ensure falling animation stops if floating stops
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid:StopAnimation(FallingAnimID)
-    end
 end
 
 local function rejoinGame()
