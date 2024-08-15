@@ -14,6 +14,7 @@ local BobbingOffset = 3 -- Starting height for bobbing effect
 
 -- Leviathan Animation IDs
 local LevitationAnimID = "rbxassetid://619543721"
+local FallingAnimID = "rbxassetid://619541867"
 
 -- Helper function to create and set up BodyVelocity
 local function setupBodyVelocity()
@@ -46,6 +47,11 @@ local function floatBehind(targetPlayer)
     local Levitation = Instance.new("Animation")
     Levitation.AnimationId = LevitationAnimID
     local LevitationAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Levitation)
+    
+    -- Load falling animation
+    local Falling = Instance.new("Animation")
+    Falling.AnimationId = FallingAnimID
+    local FallingAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Falling)
 
     -- Function to update floating position smoothly
     local function updateFloatingPosition()
@@ -85,6 +91,11 @@ local function floatBehind(targetPlayer)
                 -- Update the position with bobbing effect
                 LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, BobbingOffset + bobbingOffset, 0)
                 BodyVelocity.Velocity = Vector3.new(0, 0, 0) -- Stop any unwanted movement
+                
+                -- Play falling animation continuously
+                if not FallingAnim.IsPlaying then
+                    FallingAnim:Play()
+                end
             end
         end)
     end
@@ -104,6 +115,11 @@ local function stopFloating()
         Humanoid.JumpPower = 50 -- Set to default or desired value
         Humanoid.WalkSpeed = 16 -- Set to default or desired value
         Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+    end
+    -- Ensure falling animation stops if floating stops
+    local FallingAnim = LocalPlayer.Character.Humanoid.Animator:FindFirstChildOfClass("Animation")
+    if FallingAnim then
+        FallingAnim:Stop()
     end
 end
 
