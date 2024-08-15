@@ -10,7 +10,7 @@ local LastTargetPosition = nil
 local StabilityThreshold = 0.1 -- Movement threshold to check if target is moving
 local BobbingAmplitude = 1 -- Amplitude of the bobbing effect
 local BobbingFrequency = 1 -- Frequency of the bobbing effect
-local BobbingOffset = 3 -- Starting height for bobbing effect
+local BobbingOffset = 3.5 -- Starting height for bobbing effect
 
 -- Leviathan Animation IDs
 local LevitationAnimID = "rbxassetid://619543721"
