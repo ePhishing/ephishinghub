@@ -8,11 +8,15 @@ local BodyVelocity = nil
 local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
 local TargetHRP = nil
 
--- Animation IDs
-local HoverAnimID = "rbxassetid://17402721184"
-local FlyAnimID = "rbxassetid://17402055688"
-local FlylAnimID = "rbxassetid://17402082521"
-local FlyrAnimID = "rbxassetid://17402066227"
+-- Leviathan Animation IDs
+local LevitationAnimID = "rbxassetid://619543721"
+local SwimAnimID = "rbxassetid://619542203"
+local IdleAnimID = "rbxassetid://619542203"
+local JumpAnimID = "rbxassetid://619542888"
+local FallAnimID = "rbxassetid://619541867"
+local WalkAnimID = "rbxassetid://619544080"
+local RunAnimID = "rbxassetid://619543231"
+local ClimbAnimID = "rbxassetid://619541458"
 
 -- Helper function to create and set up BodyVelocity
 local function setupBodyVelocity()
@@ -45,19 +49,31 @@ local function floatBehind(targetPlayer)
     setupBodyVelocity()
 
     -- Load animations
-    local Hover = Instance.new("Animation")
-    Hover.AnimationId = HoverAnimID
-    local Fly = Instance.new("Animation")
-    Fly.AnimationId = FlyAnimID
-    local FlyR = Instance.new("Animation")
-    FlyR.AnimationId = FlyrAnimID
-    local FlyL = Instance.new("Animation")
-    FlyL.AnimationId = FlylAnimID
+    local Levitation = Instance.new("Animation")
+    Levitation.AnimationId = LevitationAnimID
+    local Swim = Instance.new("Animation")
+    Swim.AnimationId = SwimAnimID
+    local Idle = Instance.new("Animation")
+    Idle.AnimationId = IdleAnimID
+    local Jump = Instance.new("Animation")
+    Jump.AnimationId = JumpAnimID
+    local Fall = Instance.new("Animation")
+    Fall.AnimationId = FallAnimID
+    local Walk = Instance.new("Animation")
+    Walk.AnimationId = WalkAnimID
+    local Run = Instance.new("Animation")
+    Run.AnimationId = RunAnimID
+    local Climb = Instance.new("Animation")
+    Climb.AnimationId = ClimbAnimID
 
-    local HoverAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Hover)
-    local FlyAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Fly)
-    local FlyLAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(FlyL)
-    local FlyRAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(FlyR)
+    local LevitationAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Levitation)
+    local SwimAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Swim)
+    local IdleAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Idle)
+    local JumpAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Jump)
+    local FallAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Fall)
+    local WalkAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Walk)
+    local RunAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Run)
+    local ClimbAnim = LocalPlayer.Character.Humanoid.Animator:LoadAnimation(Climb)
 
     -- Function to update floating position smoothly
     local function updateFloatingPosition()
@@ -66,10 +82,14 @@ local function floatBehind(targetPlayer)
                 if BodyVelocity then BodyVelocity:Destroy() end
                 Floating = false
                 -- Stop all animations
-                HoverAnim:Stop()
-                FlyAnim:Stop()
-                FlyLAnim:Stop()
-                FlyRAnim:Stop()
+                LevitationAnim:Stop()
+                SwimAnim:Stop()
+                IdleAnim:Stop()
+                JumpAnim:Stop()
+                FallAnim:Stop()
+                WalkAnim:Stop()
+                RunAnim:Stop()
+                ClimbAnim:Stop()
                 return
             end
 
@@ -83,8 +103,8 @@ local function floatBehind(targetPlayer)
             LocalPlayer.Character.Humanoid.WalkSpeed = targetWalkSpeed
             LocalPlayer.Character.Humanoid.JumpPower = targetJumpPower
             LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-            -- Play Hover animation
-            HoverAnim:Play()
+            -- Play Levitation animation
+            LevitationAnim:Play()
         end)
     end
 
