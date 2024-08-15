@@ -1,4 +1,3 @@
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
@@ -6,6 +5,7 @@ local HostUsername = "notephishing" -- Replace with the actual host username
 local Floating = false
 local BodyVelocity = nil
 local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+local TargetHRP = nil
 
 -- Helper function to create and set up BodyVelocity
 local function setupBodyVelocity()
@@ -14,16 +14,23 @@ local function setupBodyVelocity()
     end
     BodyVelocity = Instance.new("BodyVelocity")
     BodyVelocity.Velocity = Vector3.new(0, 0, 0)
-    BodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    BodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000) -- Adjusted for smoother movement
     BodyVelocity.Parent = LocalPlayer.Character.HumanoidRootPart
 end
 
 local function floatBehind(targetPlayer)
-    local targetHRP = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not targetHRP then return end
+    local targetCharacter = targetPlayer.Character
+    if not targetCharacter or not targetCharacter:FindFirstChild("HumanoidRootPart") then return end
+
+    TargetHRP = targetCharacter.HumanoidRootPart
+    local targetHumanoid = targetCharacter:FindFirstChild("Humanoid")
+    
+    -- Store target's walk speed and jump power
+    local targetWalkSpeed = targetHumanoid.WalkSpeed
+    local targetJumpPower = targetHumanoid.JumpPower
 
     -- Set initial position behind and above the target
-    LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
+    LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
 
     Floating = true
 
@@ -43,11 +50,14 @@ local function floatBehind(targetPlayer)
             -- Position the local player 3 studs above and 5 studs behind the target
             LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 5 + Vector3.new(0, 3, 0)
             -- Update BodyVelocity to move towards the floating position
-            BodyVelocity.Velocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 10
-            -- Use gravity to simulate floating
-            LocalPlayer.Character.Humanoid.UseJumpPower = false
-            LocalPlayer.Character.Humanoid.JumpPower = 0
+            local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 10
+            BodyVelocity.Velocity = desiredVelocity
+            -- Match target's walk speed and jump power
+            LocalPlayer.Character.Humanoid.WalkSpeed = targetWalkSpeed
+            LocalPlayer.Character.Humanoid.JumpPower = targetJumpPower
             LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+            -- Set the humanoid's animation state to idle
+            LocalPlayer.Character.Humanoid:LoadAnimation(game.ServerStorage:FindFirstChild("IdleAnimation")) -- Ensure you have an IdleAnimation stored
         end)
     end
 
@@ -64,6 +74,7 @@ local function stopFloating()
     if Humanoid then
         Humanoid.UseJumpPower = true
         Humanoid.JumpPower = 50 -- Set to default or desired value
+        Humanoid.WalkSpeed = 16 -- Set to default or desired value
         Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
 end
