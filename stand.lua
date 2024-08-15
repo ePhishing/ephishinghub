@@ -139,7 +139,6 @@ local function rejoinGame()
     teleportService:Teleport(placeId, player) -- Teleport the player to the same place
 end
 
--- Function to start locking and spinning the camera on the target player
 local function lockCameraOnTarget(targetPlayer)
     TargetPlayer = targetPlayer
     local targetHRP = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -164,18 +163,25 @@ local function lockCameraOnTarget(targetPlayer)
             local timeElapsed = tick() - startTime
             local angle = timeElapsed * SpinSpeed
 
-            -- Compute the new camera position in a circular path around the target
-            local offsetX = SpinRadius * math.cos(angle)
-            local offsetY = SpinRadius * math.sin(angle) * 0.5
-            local offsetZ = SpinRadius * math.sin(angle)
+            -- Randomly adjust the spin axis to create unpredictable motion
+            local spinAxisX = math.random(-1, 1) * SpinRadius * math.cos(angle)
+            local spinAxisY = math.random(-1, 1) * SpinRadius * math.sin(angle) * 0.5
+            local spinAxisZ = math.random(-1, 1) * SpinRadius * math.sin(angle)
 
-            -- Update camera CFrame
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + Vector3.new(offsetX, offsetY, offsetZ), targetPosition)
+            -- Compute the new position with randomness applied to create a varied 360-degree orbit
+            local offsetX = spinAxisX + math.cos(angle)
+            local offsetY = spinAxisY + math.sin(angle)
+            local offsetZ = spinAxisZ + math.sin(angle)
+
+            -- Set the new position of the LocalPlayer while ensuring the camera looks at the target
+            local newCameraPosition = targetPosition + Vector3.new(offsetX, offsetY, offsetZ)
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(newCameraPosition, targetPosition)
         end)
     end
 
     updateCamera()
 end
+
 
 -- Function to stop the camera lock and spinning
 local function stopCameraLock()
