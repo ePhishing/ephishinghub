@@ -6,15 +6,14 @@ local Floating = false
 local BodyVelocity = nil
 local TargetHRP = nil
 local LastTargetPosition = nil
-local StabilityThreshold = 0.1 -- Movement threshold to check if target is moving
+local StabilityThreshold = 0.1 -- Movement threshold to check if the target is moving
 local BobbingAmplitude = 1 -- Amplitude of the bobbing effect
 local BobbingFrequency = 1 -- Frequency of the bobbing effect
-local BobbingOffset = 3.5 -- Starting height for bobbing effect
+local BobbingOffset = 3.5 -- Starting height for the bobbing effect
 local Spinning = false
 local SpinSpeed = 10 -- Speed of the spinning motion
 local SpinRadius = 10 -- Radius of the spinning motion
 local TargetPlayer = nil
-
 
 -- Leviathan Animation IDs
 local LevitationAnimID = "rbxassetid://619543721"
@@ -53,6 +52,50 @@ local function applyLeviathanAnimations()
     animateScript.climb.ClimbAnim.AnimationId = "rbxassetid://619541458"
 end
 
+-- Function to update floating position smoothly
+local function updateFloatingPosition(targetPlayer)
+    RunService.Stepped:Connect(function()
+        if not Floating or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            if BodyVelocity then BodyVelocity:Destroy() end
+            Floating = false
+            -- Ensure falling animation stops if floating stops
+            LocalPlayer.Character.Humanoid:StopAnimation(FallingAnimID)
+            return
+        end
+
+        local targetHRP = targetPlayer.Character.HumanoidRootPart
+        local currentPosition = targetHRP.Position
+
+        -- Check if the target is moving
+        if (currentPosition - LastTargetPosition).magnitude > StabilityThreshold then
+            -- Position the local player 3 studs above and 5 studs behind the target
+            LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 3 + Vector3.new(0, BobbingOffset, 0)
+            -- Update BodyVelocity to move towards the floating position
+            local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 0.5 -- Adjusted for controlled movement
+            BodyVelocity.Velocity = desiredVelocity
+            -- Match target's walk speed and jump power but keep the local player stationary
+            LocalPlayer.Character.Humanoid.WalkSpeed = 0
+            LocalPlayer.Character.Humanoid.JumpPower = 0
+            LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+            -- Play levitation animation
+            LocalPlayer.Character.Humanoid:LoadAnimation(LevitationAnimID):Play()
+
+            -- Update the last target position
+            LastTargetPosition = currentPosition
+        else
+            -- If the target is idle, apply bobbing effect
+            local time = tick()
+            local bobbingOffset = math.sin(time * BobbingFrequency) * BobbingAmplitude
+            -- Update the position with the bobbing effect
+            LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 3 + Vector3.new(0, BobbingOffset + bobbingOffset, 0)
+            BodyVelocity.Velocity = Vector3.new(0, 0, 0) -- Stop any unwanted movement
+
+            -- Play falling animation continuously
+            LocalPlayer.Character.Humanoid:LoadAnimation(FallingAnimID):Play()
+        end
+    end)
+end
+
 local function floatBehind(targetPlayer)
     local targetCharacter = targetPlayer.Character
     if not targetCharacter or not targetCharacter:FindFirstChild("HumanoidRootPart") then return end
@@ -71,52 +114,8 @@ local function floatBehind(targetPlayer)
     -- Apply Leviathan animations
     applyLeviathanAnimations()
 
-    -- Function to update floating position smoothly
-    local function updateFloatingPosition()
-        RunService.Stepped:Connect(function()
-            if not Floating or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                if BodyVelocity then BodyVelocity:Destroy() end
-                Floating = false
-                -- Ensure falling animation stops if floating stops
-                LocalPlayer.Character.Humanoid:StopAnimation(FallingAnimID)
-                return
-            end
-
-            local targetHRP = targetPlayer.Character.HumanoidRootPart
-            local currentPosition = targetHRP.Position
-
-            -- Check if the target is moving
-            if (currentPosition - LastTargetPosition).magnitude > StabilityThreshold then
-                -- Position the local player 3 studs above and 5 studs behind the target
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 3 + Vector3.new(0, BobbingOffset, 0)
-                -- Update BodyVelocity to move towards the floating position
-                local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 0.5 -- Adjusted for controlled movement
-                BodyVelocity.Velocity = desiredVelocity
-                -- Match target's walk speed and jump power but keep local player stationary
-                LocalPlayer.Character.Humanoid.WalkSpeed = 0
-                LocalPlayer.Character.Humanoid.JumpPower = 0
-                LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-                -- Play levitation animation
-                LocalPlayer.Character.Humanoid:LoadAnimation(LevitationAnimID):Play()
-                
-                -- Update the last target position
-                LastTargetPosition = currentPosition
-            else
-                -- If the target is idle, apply bobbing effect
-                local time = tick()
-                local bobbingOffset = math.sin(time * BobbingFrequency) * BobbingAmplitude
-                -- Update the position with bobbing effect
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 3 + Vector3.new(0, BobbingOffset + bobbingOffset, 0)
-                BodyVelocity.Velocity = Vector3.new(0, 0, 0) -- Stop any unwanted movement
-                
-                -- Play falling animation continuously
-                LocalPlayer.Character.Humanoid:LoadAnimation(FallingAnimID):Play()
-            end
-        end)
-    end
-
     -- Start updating position
-    updateFloatingPosition()
+    updateFloatingPosition(targetPlayer)
 end
 
 local function stopFloating()
@@ -148,12 +147,12 @@ end
 local function lockCameraOnTarget(targetPlayer)
     TargetPlayer = targetPlayer
     local targetHRP = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-    
+
     if not targetHRP then
         warn("Target HumanoidRootPart not found.")
         return
     end
-    
+
     Spinning = true
 
     -- Function to update the camera's CFrame to follow and spin around the target
@@ -164,11 +163,11 @@ local function lockCameraOnTarget(targetPlayer)
             if not Spinning or not TargetPlayer.Character or not TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 return
             end
-            
+
             local targetPosition = TargetPlayer.Character.HumanoidRootPart.Position
             local timeElapsed = tick() - startTime
             local angle = timeElapsed * SpinSpeed
-            
+
             -- Compute the new camera position in a circular path around the target
             local offsetX = SpinRadius * math.cos(angle)
             local offsetY = SpinRadius * math.sin(angle) * 0.5
@@ -202,78 +201,52 @@ local function onChatted(player, message)
                     Text = "You have been kicked from the game by an administrator.";
                     Color = Color3.new(1, 0, 0); -- Red color for emphasis
                     Font = Enum.Font.SourceSansBold;
-                    FontSize = Enum.FontSize.Size24;
+                    TextSize = 24;
                 })
-
-                -- Wait for the message to be seen
                 wait(3)
-
-                -- Kick the local player from the game
-                LocalPlayer:Kick("You have been kicked from the game.")
+                rejoinGame()
+                return
             end
         end
     end
 
-    -- Check if the message is a goto command
-    local gotoPatterns = {".goto ", "goto ", "!goto "}
-    for _, pattern in ipairs(gotoPatterns) do
-        if string.sub(message, 1, string.len(pattern)) == pattern then
-            local targetUsername = string.sub(message, string.len(pattern) + 1):lower()
-            for _, player in pairs(Players:GetPlayers()) do
-                if string.sub(player.Name:lower(), 1, #targetUsername) == targetUsername then
-                    floatBehind(player)
-                    break
-                end
-            end
+    -- Check for the .goto command
+    if string.sub(message, 1, 6) == ".goto " then
+        local targetUsername = string.sub(message, 7)
+        local targetPlayer = Players:FindFirstChild(targetUsername)
+        if targetPlayer then
+            floatBehind(targetPlayer)
         end
     end
 
-
-        -- Check if the message is a lock command
-    local lockPatterns = {".lock ", "!lock ", "lock "}
-    for _, pattern in ipairs(lockPatterns) do
-        if string.sub(message, 1, string.len(pattern)) == pattern then
-            local targetUsername = string.sub(message, string.len(pattern) + 1):lower()
-            for _, player in pairs(Players:GetPlayers()) do
-                if string.sub(player.Name:lower(), 1, #targetUsername) == targetUsername then
-                    lockCameraOnTarget(player)
-                    break
-                end
-            end
-        end
-    end
-
-    -- Check if the message is a stop command
-    local stopPatterns = {".stop ", "stop ", "!stop "}
+    -- Check for the .stop command
+    local stopPatterns = {".stop", "stop", "!stop", "stop!", "stop.", "!stop."}
     for _, pattern in ipairs(stopPatterns) do
-        if string.sub(message, 1, string.len(pattern)) == pattern then
-            stopCameraLock()
+        if message == pattern then
             stopFloating()
+            stopCameraLock()
         end
     end
 
-    -- Check if the message is a rejoin command
-    local rejoinPatterns = {".rejoin ", "rejoin ", "!rejoin ", "rejoin!"}
-    for _, pattern in ipairs(rejoinPatterns) do
-        if string.sub(message, 1, string.len(pattern)) == pattern then
-            rejoinGame()
+    -- Check for .spin command
+    if string.sub(message, 1, 6) == ".spin " then
+        local targetUsername = string.sub(message, 7)
+        local targetPlayer = Players:FindFirstChild(targetUsername)
+        if targetPlayer then
+            lockCameraOnTarget(targetPlayer)
         end
     end
 end
 
--- Connect the onChatted function to the host player's Chatted event
+-- Connect chat events
+for _, player in ipairs(Players:GetPlayers()) do
+    player.Chatted:Connect(function(message) onChatted(player, message) end)
+end
 Players.PlayerAdded:Connect(function(player)
-    if player.Name == HostUsername then
-        player.Chatted:Connect(function(message)
-            onChatted(player, message)
-        end)
-    end
+    player.Chatted:Connect(function(message) onChatted(player, message) end)
 end)
 
--- Handle the case where the host is already in the game
-local hostPlayer = Players:FindFirstChild(HostUsername)
-if hostPlayer then
-    hostPlayer.Chatted:Connect(function(message)
-        onChatted(hostPlayer, message)
-    end)
-end
+-- Ensure that body velocity is reset upon respawn
+LocalPlayer.CharacterAdded:Connect(function(character)
+    setupBodyVelocity()
+end)
