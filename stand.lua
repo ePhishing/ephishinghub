@@ -38,14 +38,14 @@ local function applyLeviathanAnimations()
 
     local animateScript = LocalPlayer.Character:WaitForChild("Animate")
     animateScript.run.RunAnim.AnimationId = LevitationAnimID
-    --animateScript.walk.WalkAnim.AnimationId = "rbxassetid://"
-    --animateScript.jump.JumpAnim.AnimationId = "rbxassetid://"
-    --animateScript.idle.Animation1.AnimationId = "rbxassetid://"
-    --animateScript.idle.Animation2.AnimationId = "rbxassetid://"
+    animateScript.walk.WalkAnim.AnimationId = "rbxassetid://619544080"
+    animateScript.jump.JumpAnim.AnimationId = "rbxassetid://619542888"
+    animateScript.idle.Animation1.AnimationId = "rbxassetid://619542203"
+    animateScript.idle.Animation2.AnimationId = "rbxassetid://619542203"
     animateScript.fall.FallAnim.AnimationId = FallingAnimID
-    --animateScript.swim.Swim.AnimationId = "rbxassetid://"
-    --animateScript.swimidle.SwimIdle.AnimationId = "rbxassetid://"
-    --animateScript.climb.ClimbAnim.AnimationId = "rbxassetid://"
+    animateScript.swim.Swim.AnimationId = "rbxassetid://619543721"
+    animateScript.swimidle.SwimIdle.AnimationId = "rbxassetid://619543721"
+    animateScript.climb.ClimbAnim.AnimationId = "rbxassetid://619541458"
 end
 
 local function floatBehind(targetPlayer)
@@ -56,7 +56,7 @@ local function floatBehind(targetPlayer)
     LastTargetPosition = TargetHRP.Position
 
     -- Set initial position behind and above the target
-    LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 4 + Vector3.new(0, BobbingOffset, 0)
+    LocalPlayer.Character.HumanoidRootPart.CFrame = TargetHRP.CFrame - TargetHRP.CFrame.LookVector * 3 + Vector3.new(0, BobbingOffset, 0)
 
     Floating = true
 
@@ -83,7 +83,7 @@ local function floatBehind(targetPlayer)
             -- Check if the target is moving
             if (currentPosition - LastTargetPosition).magnitude > StabilityThreshold then
                 -- Position the local player 3 studs above and 5 studs behind the target
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 4 + Vector3.new(0, BobbingOffset, 0)
+                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 3 + Vector3.new(0, BobbingOffset, 0)
                 -- Update BodyVelocity to move towards the floating position
                 local desiredVelocity = (LocalPlayer.Character.HumanoidRootPart.Position - targetHRP.Position) * 0.5 -- Adjusted for controlled movement
                 BodyVelocity.Velocity = desiredVelocity
@@ -101,7 +101,7 @@ local function floatBehind(targetPlayer)
                 local time = tick()
                 local bobbingOffset = math.sin(time * BobbingFrequency) * BobbingAmplitude
                 -- Update the position with bobbing effect
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 4 + Vector3.new(0, BobbingOffset + bobbingOffset, 0)
+                LocalPlayer.Character.HumanoidRootPart.CFrame = targetHRP.CFrame - targetHRP.CFrame.LookVector * 3 + Vector3.new(0, BobbingOffset + bobbingOffset, 0)
                 BodyVelocity.Velocity = Vector3.new(0, 0, 0) -- Stop any unwanted movement
                 
                 -- Play falling animation continuously
