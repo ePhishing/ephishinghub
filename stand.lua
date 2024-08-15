@@ -10,6 +10,11 @@ local StabilityThreshold = 0.1 -- Movement threshold to check if target is movin
 local BobbingAmplitude = 1 -- Amplitude of the bobbing effect
 local BobbingFrequency = 1 -- Frequency of the bobbing effect
 local BobbingOffset = 3.5 -- Starting height for bobbing effect
+local Spinning = false
+local SpinSpeed = 10 -- Speed of the spinning motion
+local SpinRadius = 10 -- Radius of the spinning motion
+local TargetPlayer = nil
+
 
 -- Leviathan Animation IDs
 local LevitationAnimID = "rbxassetid://619543721"
@@ -139,6 +144,49 @@ local function rejoinGame()
     teleportService:Teleport(placeId, player) -- Teleport the player to the same place
 end
 
+-- Function to start locking and spinning the camera on the target player
+local function lockCameraOnTarget(targetPlayer)
+    TargetPlayer = targetPlayer
+    local targetHRP = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    
+    if not targetHRP then
+        warn("Target HumanoidRootPart not found.")
+        return
+    end
+    
+    Spinning = true
+
+    -- Function to update the camera's CFrame to follow and spin around the target
+    local function updateCamera()
+        local startTime = tick()
+
+        RunService.RenderStepped:Connect(function()
+            if not Spinning or not TargetPlayer.Character or not TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                return
+            end
+            
+            local targetPosition = TargetPlayer.Character.HumanoidRootPart.Position
+            local timeElapsed = tick() - startTime
+            local angle = timeElapsed * SpinSpeed
+            
+            -- Compute the new camera position in a circular path around the target
+            local offsetX = SpinRadius * math.cos(angle)
+            local offsetY = SpinRadius * math.sin(angle) * 0.5
+            local offsetZ = SpinRadius * math.sin(angle)
+
+            -- Update camera CFrame
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + Vector3.new(offsetX, offsetY, offsetZ), targetPosition)
+        end)
+    end
+
+    updateCamera()
+end
+
+-- Function to stop the camera lock and spinning
+local function stopCameraLock()
+    Spinning = false
+end
+
 local function onChatted(player, message)
     -- Ensure the command is coming from the host
     if player.Name ~= HostUsername then return end
@@ -180,10 +228,26 @@ local function onChatted(player, message)
         end
     end
 
+
+        -- Check if the message is a lock command
+    local lockPatterns = {".lock ", "!lock ", "lock "}
+    for _, pattern in ipairs(lockPatterns) do
+        if string.sub(message, 1, string.len(pattern)) == pattern then
+            local targetUsername = string.sub(message, string.len(pattern) + 1):lower()
+            for _, player in pairs(Players:GetPlayers()) do
+                if string.sub(player.Name:lower(), 1, #targetUsername) == targetUsername then
+                    lockCameraOnTarget(player)
+                    break
+                end
+            end
+        end
+    end
+
     -- Check if the message is a stop command
     local stopPatterns = {".stop ", "stop ", "!stop "}
     for _, pattern in ipairs(stopPatterns) do
         if string.sub(message, 1, string.len(pattern)) == pattern then
+            stopCameraLock()
             stopFloating()
         end
     end
