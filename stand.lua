@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 local HostUsername = "notephishing" -- Replace with the actual host username
 local Floating = false
@@ -79,7 +80,17 @@ local function stopFloating()
     end
 end
 
+local function rejoinGame()
+    local player = LocalPlayer
+    local placeId = game.PlaceId -- Get the current place ID
+    local teleportService = game:GetService("TeleportService")
+    teleportService:Teleport(placeId, player) -- Teleport the player to the same place
+end
+
 local function onChatted(player, message)
+    -- Ensure the command is coming from the host
+    if player.Name ~= HostUsername then return end
+
     -- Check if the message is a kick command
     local kickPatterns = {"!kick ", ".kick ", "kick "}
     for _, pattern in ipairs(kickPatterns) do
@@ -122,6 +133,14 @@ local function onChatted(player, message)
     for _, pattern in ipairs(stopPatterns) do
         if string.sub(message, 1, string.len(pattern)) == pattern then
             stopFloating()
+        end
+    end
+
+    -- Check if the message is a rejoin command
+    local rejoinPatterns = {".rejoin ", "rejoin ", "!rejoin ", "rejoin!"}
+    for _, pattern in ipairs(rejoinPatterns) do
+        if string.sub(message, 1, string.len(pattern)) == pattern then
+            rejoinGame()
         end
     end
 end
