@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 local HostUsername = "notephishing" -- Replace with the actual host username
 local Floating = false
@@ -55,6 +56,10 @@ local function applyLeviathanAnimations()
 end
 
 local function floatBehind(targetPlayer)
+    -- Stop any current actions
+    stopFloating()
+    stopCameraLock()
+
     local targetCharacter = targetPlayer.Character
     if not targetCharacter or not targetCharacter:FindFirstChild("HumanoidRootPart") then return end
 
@@ -132,6 +137,10 @@ local function stopFloating()
 end
 
 local function lockCameraOnTarget(targetPlayer)
+    -- Stop any current actions
+    stopFloating()
+    stopCameraLock()
+
     TargetPlayer = targetPlayer
     local targetHRP = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
 
@@ -183,6 +192,11 @@ local function stopCameraLock()
     Spinning = false
 end
 
+local function rejoinGame()
+    local gameId = game.PlaceId
+    TeleportService:Teleport(gameId, LocalPlayer)
+end
+
 local function onChatted(player, message)
     -- Ensure the command is coming from the host
     if player.Name ~= HostUsername then return end
@@ -194,51 +208,59 @@ local function onChatted(player, message)
             local targetUsername = string.sub(message, string.len(pattern) + 1)
             if targetUsername == LocalPlayer.Name then
                 -- Display a kick message pop-up (simulating an anti-cheat kick)
-                game.StarterGui:SetCore("ChatMakeSystemMessage", {
-                    Text = "You have been kicked from the game by an administrator.";
-                    Color = Color3.new(1, 0, 0); -- Red color for emphasis
-                    Font = Enum.Font.SourceSansBold;
-                    TextSize = 24;
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "You have been kicked!";
+                    Text = "Kicked by host.";
+                    Duration = 5;
+                    Button1 = "OK";
+                    Icon = "rbxassetid://7171506261" -- Kick icon
                 })
                 return
             end
         end
     end
 
-    -- Float behind the target if the command is .goto
-    local gotoPattern = ".goto "
-    if string.sub(message, 1, string.len(gotoPattern)) == gotoPattern then
-        local targetUsername = string.sub(message, string.len(gotoPattern) + 1)
+    -- Check for the .goto command
+    if string.sub(message, 1, 6) == ".goto " then
+        local targetUsername = string.sub(message, 7)
         local targetPlayer = Players:FindFirstChild(targetUsername)
         if targetPlayer then
             floatBehind(targetPlayer)
+        else
+            warn("Target player not found.")
         end
-        return
     end
 
-    -- Spin around the target if the command is .spin
-    local spinPattern = ".spin "
-    if string.sub(message, 1, string.len(spinPattern)) == spinPattern then
-        local targetUsername = string.sub(message, string.len(spinPattern) + 1)
+    -- Check for the .spin command
+    if string.sub(message, 1, 6) == ".spin " then
+        local targetUsername = string.sub(message, 7)
         local targetPlayer = Players:FindFirstChild(targetUsername)
         if targetPlayer then
             lockCameraOnTarget(targetPlayer)
+        else
+            warn("Target player not found.")
         end
-        return
     end
 
-    -- Stop floating and spinning if the command is stop
-    if message == "stop" or message == "!stop" or message == "stop!" or message == ".stop" or message == "stop." then
+    -- Check for the .stop command
+    if message == ".stop" or message == "stop" or message == "stop!" or message == ".stop" or message == "stop." then
         stopFloating()
         stopCameraLock()
-        return
+    end
+    
+    -- Check for the .rejoin command
+    if message == ".rejoin" then
+        rejoinGame()
     end
 end
 
--- Connect the onChatted function to the Chatted event
-Players.PlayerChatted:Connect(function(player, message)
-    onChatted(player, message)
+Players.PlayerAdded:Connect(function(player)
+    player.Chatted:Connect(function(message)
+        onChatted(player, message)
+    end)
 end)
 
--- Automatically apply the Leviathan animations when the player's character is added
-LocalPlayer.CharacterAdded:Connect(applyLeviathanAnimations)
+-- Ensure the LocalPlayer's chat is monitored
+LocalPlayer.Chatted:Connect(function(message)
+    onChatted(LocalPlayer, message)
+end)
