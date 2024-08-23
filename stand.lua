@@ -86,29 +86,61 @@ local function grabPlayer(target)
     end
 end
 
-
 -- Function to handle autosave logic
 local function autosave(user)
     if not table.find(autosavedUsers, user.Name) then
         table.insert(autosavedUsers, user.Name)
-        print("User " .. user.Name .. " added to autosave list.")
     end
 
     local localPlayer = Players.LocalPlayer
     local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 
-    -- Monitor the health of the target user
-    user.Character:WaitForChild("Humanoid").HealthChanged:Connect(function(health)
-        if health <= 1 then
-            print("User " .. user.Name .. " health is low. Initiating grab process.")
+    -- Monitor the K.O and Dead status of the target user
+    local function checkStatus()
+        while true do
+            wait(1) -- Check status every second
+            
+            local userChar = user.Character
+            if userChar and userChar:FindFirstChild("BodyEffects") then
+                local bodyEffects = userChar.BodyEffects
+                if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
+                   not bodyEffects:FindFirstChild("GRABBING_CONSTRAINT") and 
+                   not bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
 
-            local userChar = user.Character or user.CharacterAdded:Wait()
-
-            -- Perform grabbing simulation
-            grabPlayer(user.Name)
+                    grabPlayer(user.Name)
+                    return
+                end
+            end
         end
-    end)
+    end
+    
+    -- Start checking status
+    checkStatus()
 end
+
+
+-- Function to handle autosave logic
+-- local function autosave(user)
+--    if not table.find(autosavedUsers, user.Name) then
+--        table.insert(autosavedUsers, user.Name)
+--        print("User " .. user.Name .. " added to autosave list.")
+  --  end
+--
+  --  local localPlayer = Players.LocalPlayer
+    --local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+--
+  --  -- Monitor the health of the target user
+    --user.Character:WaitForChild("Humanoid").HealthChanged:Connect(function(health)
+      --  if health <= 1 then
+        --    print("User " .. user.Name .. " health is low. Initiating grab process.")
+--
+  --          local userChar = user.Character or user.CharacterAdded:Wait()
+--
+  --          -- Perform grabbing simulation
+    --      grabPlayer(user.Name)
+     --   end
+    --end)
+--end
 
 -- Function to remove all autosaved users
 local function removeAutosaves()
