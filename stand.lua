@@ -160,8 +160,8 @@ local function onChatted(player, message)
         local username = string.sub(message, 11)
         local user = findPlayerByName(username)
         if user then
-            autosave(user)
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Autosave masters activated.", "All")
+            autosave(user)
         else
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Invalid username", "All")
         end
