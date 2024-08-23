@@ -1,4 +1,4 @@
-local ownerUsername = "notephishing"
+local ownerUsername = "notephishing" -- The owner's username
 local autosavedUsers = {}
 local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
 local targetCFrame = CFrame.new(583.931641, 51.061409, -476.954193, -0.999745369, 1.49123665e-08, -0.0225663595, 1.44838328e-08, 1, 1.91533687e-08, 0.0225663595, 1.88216429e-08, -0.999745369)
@@ -6,72 +6,33 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+-- Flag to track grabbing status
 local isGrabbing = false
 
--- Initialize BlockAura flag
-local BlockAura = true
-local BlockAuraReal = false
-
--- Function to handle auto block
-local function autoBlock()
-    if BlockAura then
-        BlockAuraReal = true
-        
-        while BlockAuraReal do
-            wait()
-            
-            local MainEvent = ReplicatedStorage:WaitForChild('MainEvent')
-            local Distancia = 15
-            
-            local forbidden = {'[Popcorn]','[HotDog]','[GrenadeLauncher]','[RPG]','[SMG]','[TacticalShotgun]','[AK47]','[AUG]','[Glock]', '[Shotgun]','[Flamethrower]','[Silencer]','[AR]','[Revolver]','[SilencerAR]','[LMG]','[P90]','[DrumGun]','[Double-Barrel SG]','[Hamburger]','[Chicken]','[Pizza]','[Cranberry]','[Donut]','[Taco]','[Starblox Latte]','[BrownBag]','[Weights]','[HeavyWeights]'}
-            local Found = false
-            for _, v in pairs(Workspace.Players:GetChildren()) do
-                local upperTorso = v:FindFirstChild('UpperTorso')
-                if upperTorso and (upperTorso.Position - Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= Distancia then
-                    local tool = v:FindFirstChildWhichIsA('Tool')
-                    if v.BodyEffects.Attacking.Value and (not tool or not table.find(forbidden, tool.Name)) and v.Name ~= Players.LocalPlayer.Name then
-                        Found = true
-                        MainEvent:FireServer('Block', Players.LocalPlayer.Name)
-                    end
-                end
-            end
-            
-            if not Found then
-                local blockEffect = Players.LocalPlayer.Character.BodyEffects:FindFirstChild('Block')
-                if blockEffect then
-                    blockEffect:Destroy()
-                end
-            end
-        end
-    else
-        BlockAuraReal = false
-    end
-end
-
-
+-- Function to find a player by a partial match of username or display name
 local function findPlayerByName(name)
-    local lowerName = name:lower()
     for _, player in pairs(Players:GetPlayers()) do
-        local displayName = player.DisplayName:lower()
-        local username = player.Name:lower()
-
-        if displayName:find(lowerName, 1, true) == 1 or username:find(lowerName, 1, true) == 1 then
+        if string.sub(player.DisplayName:lower(), 1, #name) == name:lower() or 
+           string.sub(player.Name:lower(), 1, #name) == name:lower() then
             return player
         end
     end
     return nil
 end
 
-
+-- Function to handle grabbing simulation
 local function grabPlayer(target)
     local localPlayer = Players.LocalPlayer
     local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-
+    
+    -- Ensure the script only starts grabbing if it is not already in progress
     if isGrabbing then
+        print("Already grabbing. Exiting function.")
         return
     end
     
     isGrabbing = true
+    print("Starting to grab player " .. target .. ".")
 
     while isGrabbing do
         wait()
@@ -80,30 +41,51 @@ local function grabPlayer(target)
            not game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") and 
            not game.Players[target].Character.BodyEffects['Dead'].Value then
 
+            -- Move to target and perform grabbing
             local targetChar = game.Players[target].Character
             local targetPosition = targetChar.UpperTorso.Position + Vector3.new(0, 3, 0)
 
             localChar.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+            print("Moved local player to target position: " .. tostring(targetPosition))
+            wait(0.1)
 
-            ReplicatedStorage.MainEvent:FireServer("Grabbing", false)
-
+            -- Start grabbing
+            local grabString = "Grabbing"
+            local grabBoolean = false
+            ReplicatedStorage.MainEvent:FireServer(grabString, grabBoolean)
+            print("Grabbing action fired to server.")
+            wait(0.2)
+            
+            -- Check if grabbing constraint is applied
             if game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") then
-
+                print("Player " .. target .. " has been successfully grabbed.")
+                
+                -- Move local player to target CFrame immediately after grabbing
                 localChar:SetPrimaryPartCFrame(targetCFrame)
-
+                print("Local player moved to target CFrame.")
+                
+                -- Wait until the local player is close to the targetCFrame
                 while (localChar.PrimaryPart.Position - targetCFrame.Position).magnitude > 2 do
                     wait()
                 end
                 
+                -- Check if the local player is at the targetCFrame
                 if (localChar.PrimaryPart.CFrame.Position - targetCFrame.Position).magnitude < 0.1 then
-                
-                    wait(1.5)
-
-                    ReplicatedStorage.MainEvent:FireServer("Grabbing", true)
+                    -- Wait 2 seconds before stopping the grabbing action
+                    wait(2)
                     
-                    wait(0.5)
+                    -- Stop grabbing action
+                    local stopString = "Grabbing"
+                    local stopBoolean = true
+                    ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
+                    print("Grabbing action stopped.")
                     
+                    -- Wait an additional 1 second to ensure the stopping action is processed
+                    wait(1)
+                    
+                    -- Move local player to safezone after waiting
                     localChar:SetPrimaryPartCFrame(safezoneCFrame)
+                    print("Local player moved to safezone CFrame.")
                     
                     isGrabbing = false
                     break
@@ -113,6 +95,8 @@ local function grabPlayer(target)
     end
 end
 
+
+-- Function to handle autosave logic
 local function autosave(user)
     if not table.find(autosavedUsers, user.Name) then
         table.insert(autosavedUsers, user.Name)
@@ -122,18 +106,25 @@ local function autosave(user)
     local localPlayer = Players.LocalPlayer
     local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 
+    -- Monitor the health of the target user
     user.Character:WaitForChild("Humanoid").HealthChanged:Connect(function(health)
         if health <= 1 then
+            print("User " .. user.Name .. " health is low. Initiating grab process.")
+
             local userChar = user.Character or user.CharacterAdded:Wait()
+
+            -- Perform grabbing simulation
             grabPlayer(user.Name)
         end
     end)
 end
 
+-- Function to remove all autosaved users
 local function removeAutosaves()
     autosavedUsers = {}
 end
 
+-- Function to handle chat messages
 local function onChatted(player, message)
     if player.Name ~= ownerUsername then return end
 
@@ -163,16 +154,16 @@ local function onChatted(player, message)
     end
 end
 
+-- Connect the function to the player's chat event
 Players.PlayerAdded:Connect(function(player)
     player.Chatted:Connect(function(message)
         onChatted(player, message)
-        autoBlock()
     end)
 end)
 
+-- Ensure that the script also works for players already in the game
 for _, player in pairs(Players:GetPlayers()) do
     player.Chatted:Connect(function(message)
         onChatted(player, message)
-        autoBlock()
     end)
 end
