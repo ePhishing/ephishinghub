@@ -92,10 +92,6 @@ local function autosave(user)
         table.insert(autosavedUsers, user.Name)
     end
 
-    local localPlayer = Players.LocalPlayer
-    local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-
-    -- Monitor the K.O and Dead status of the target user
     local function checkStatus()
         while true do
             wait(1) -- Check status every second
@@ -105,7 +101,7 @@ local function autosave(user)
                 local bodyEffects = userChar.BodyEffects
                 if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
                    not bodyEffects:FindFirstChild("GRABBING_CONSTRAINT") and 
-                   not bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
+                   bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
 
                     grabPlayer(user.Name)
                     return
