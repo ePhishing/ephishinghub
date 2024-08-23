@@ -1,4 +1,4 @@
-local ownerUsername = "notephishing" -- The owner's username
+local ownerUsername = "notephishing"
 local autosavedUsers = {}
 local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
 local targetCFrame = CFrame.new(583.931641, 51.061409, -476.954193, -0.999745369, 1.49123665e-08, -0.0225663595, 1.44838328e-08, 1, 1.91533687e-08, 0.0225663595, 1.88216429e-08, -0.999745369)
@@ -6,17 +6,14 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
--- Flag to track grabbing status
 local isGrabbing = false
 
--- Function to find a player by a partial match of username or display name
 local function findPlayerByName(name)
     local lowerName = name:lower()
     for _, player in pairs(Players:GetPlayers()) do
         local displayName = player.DisplayName:lower()
         local username = player.Name:lower()
 
-        -- Check if the search term is a prefix of either display name or username
         if displayName:find(lowerName, 1, true) == 1 or username:find(lowerName, 1, true) == 1 then
             return player
         end
@@ -25,11 +22,10 @@ local function findPlayerByName(name)
 end
 
 
--- Function to handle grabbing simulation
 local function grabPlayer(target)
     local localPlayer = Players.LocalPlayer
     local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-    
+
     if isGrabbing then
         return
     end
@@ -39,22 +35,20 @@ local function grabPlayer(target)
     while isGrabbing do
         wait()
 
-        local targetPlayer = Players:FindFirstChild(target)
-        if targetPlayer and targetPlayer.Character and targetPlayer.Character.BodyEffects['K.O'].Value and 
-           not Workspace.Players:FindFirstChild(target):FindFirstChild("GRABBING_CONSTRAINT") and 
-           not targetPlayer.Character.BodyEffects['Dead'].Value then
+        if game.Players[target].Character.BodyEffects['K.O'].Value and 
+           not game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") and 
+           not game.Players[target].Character.BodyEffects['Dead'].Value then
 
-            -- Move to target and perform grabbing
-            local targetChar = targetPlayer.Character
-            local targetPosition = targetChar:FindFirstChild('UpperTorso').Position + Vector3.new(0, 3, 0)
+            local targetChar = game.Players[target].Character
+            local targetPosition = targetChar.UpperTorso.Position + Vector3.new(0, 3, 0)
 
             localChar.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
 
-            -- Start grabbing
-            ReplicatedStorage.MainEvent:FireServer("Grabbing", false)
-            
-            -- Check if grabbing constraint is applied
-            if Workspace.Players:FindFirstChild(target):FindFirstChild("GRABBING_CONSTRAINT") then
+            local grabString = "Grabbing"
+            local grabBoolean = false
+            ReplicatedStorage.MainEvent:FireServer(grabString, grabBoolean)
+
+            if game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") then
 
                 localChar:SetPrimaryPartCFrame(targetCFrame)
 
@@ -62,11 +56,12 @@ local function grabPlayer(target)
                     wait()
                 end
                 
-                -- Check if the local player is at the targetCFrame
                 if (localChar.PrimaryPart.CFrame.Position - targetCFrame.Position).magnitude < 0.1 then
-                    ReplicatedStorage.MainEvent:FireServer("Grabbing", true)
-                    wait(1)
                 
+                    local stopString = "Grabbing"
+                    local stopBoolean = true
+                    ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
+                    
                     localChar:SetPrimaryPartCFrame(safezoneCFrame)
                     
                     isGrabbing = false
@@ -77,7 +72,6 @@ local function grabPlayer(target)
     end
 end
 
--- Function to handle autosave logic
 local function autosave(user)
     if not table.find(autosavedUsers, user.Name) then
         table.insert(autosavedUsers, user.Name)
@@ -95,12 +89,10 @@ local function autosave(user)
     end)
 end
 
--- Function to remove all autosaved users
 local function removeAutosaves()
     autosavedUsers = {}
 end
 
--- Function to handle chat messages
 local function onChatted(player, message)
     if player.Name ~= ownerUsername then return end
 
@@ -130,14 +122,12 @@ local function onChatted(player, message)
     end
 end
 
--- Connect the function to the player's chat event
 Players.PlayerAdded:Connect(function(player)
     player.Chatted:Connect(function(message)
         onChatted(player, message)
     end)
 end)
 
--- Ensure that the script also works for players already in the game
 for _, player in pairs(Players:GetPlayers()) do
     player.Chatted:Connect(function(message)
         onChatted(player, message)
