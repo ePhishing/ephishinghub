@@ -85,9 +85,7 @@ local function grabPlayer(target)
 
             localChar.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
 
-            local grabString = "Grabbing"
-            local grabBoolean = false
-            ReplicatedStorage.MainEvent:FireServer(grabString, grabBoolean)
+            ReplicatedStorage.MainEvent:FireServer("Grabbing", false)
 
             if game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") then
 
@@ -99,9 +97,11 @@ local function grabPlayer(target)
                 
                 if (localChar.PrimaryPart.CFrame.Position - targetCFrame.Position).magnitude < 0.1 then
                 
-                    local stopString = "Grabbing"
-                    local stopBoolean = true
-                    ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
+                    wait(1.5)
+
+                    ReplicatedStorage.MainEvent:FireServer("Grabbing", true)
+                    
+                    wait(0.5)
                     
                     localChar:SetPrimaryPartCFrame(safezoneCFrame)
                     
