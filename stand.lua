@@ -70,7 +70,7 @@ local function grabPlayer(target)
                 -- Check if the local player is at the targetCFrame
                 if (localChar.PrimaryPart.CFrame.Position - targetCFrame.Position).magnitude < 0.1 then
                     -- Wait 2 seconds before stopping the grabbing action
-                    wait(1)
+                    wait(2)
                     
                     -- Stop grabbing action
                     local stopString = "Grabbing"
