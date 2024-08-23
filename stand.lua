@@ -27,12 +27,10 @@ local function grabPlayer(target)
     
     -- Ensure the script only starts grabbing if it is not already in progress
     if isGrabbing then
-        print("Already grabbing. Exiting function.")
         return
     end
     
     isGrabbing = true
-    print("Starting to grab player " .. target .. ".")
 
     while isGrabbing do
         wait()
@@ -46,21 +44,19 @@ local function grabPlayer(target)
             local targetPosition = targetChar.UpperTorso.Position + Vector3.new(0, 3, 0)
 
             localChar.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-            print("Moved local player to target position: " .. tostring(targetPosition))
+            wait(0.1)
 
             -- Start grabbing
             local grabString = "Grabbing"
             local grabBoolean = false
             ReplicatedStorage.MainEvent:FireServer(grabString, grabBoolean)
-            print("Grabbing action fired to server.")
+            wait(0.2)
             
             -- Check if grabbing constraint is applied
             if game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") then
-                print("Player " .. target .. " has been successfully grabbed.")
                 
                 -- Move local player to target CFrame immediately after grabbing
                 localChar:SetPrimaryPartCFrame(targetCFrame)
-                print("Local player moved to target CFrame.")
                 
                 -- Wait until the local player is close to the targetCFrame
                 while (localChar.PrimaryPart.Position - targetCFrame.Position).magnitude > 2 do
@@ -69,21 +65,18 @@ local function grabPlayer(target)
                 
                 -- Check if the local player is at the targetCFrame
                 if (localChar.PrimaryPart.CFrame.Position - targetCFrame.Position).magnitude < 0.1 then
-                    -- Wait 2 seconds before stopping the grabbing action
-                    wait(2)
+                    wait(1)
                     
                     -- Stop grabbing action
                     local stopString = "Grabbing"
                     local stopBoolean = true
                     ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
-                    print("Grabbing action stopped.")
                     
                     -- Wait an additional 1 second to ensure the stopping action is processed
                     wait(1)
                     
                     -- Move local player to safezone after waiting
                     localChar:SetPrimaryPartCFrame(safezoneCFrame)
-                    print("Local player moved to safezone CFrame.")
                     
                     isGrabbing = false
                     break
