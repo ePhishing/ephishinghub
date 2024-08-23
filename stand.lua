@@ -8,6 +8,47 @@ local Workspace = game:GetService("Workspace")
 
 local isGrabbing = false
 
+-- Initialize BlockAura flag
+local BlockAura = true
+local BlockAuraReal = false
+
+-- Function to handle auto block
+local function autoBlock()
+    if BlockAura then
+        BlockAuraReal = true
+        
+        while BlockAuraReal do
+            wait()
+            
+            local MainEvent = ReplicatedStorage:WaitForChild('MainEvent')
+            local Distancia = 15
+            
+            local forbidden = {'[Popcorn]','[HotDog]','[GrenadeLauncher]','[RPG]','[SMG]','[TacticalShotgun]','[AK47]','[AUG]','[Glock]', '[Shotgun]','[Flamethrower]','[Silencer]','[AR]','[Revolver]','[SilencerAR]','[LMG]','[P90]','[DrumGun]','[Double-Barrel SG]','[Hamburger]','[Chicken]','[Pizza]','[Cranberry]','[Donut]','[Taco]','[Starblox Latte]','[BrownBag]','[Weights]','[HeavyWeights]'}
+            local Found = false
+            for _, v in pairs(Workspace.Players:GetChildren()) do
+                local upperTorso = v:FindFirstChild('UpperTorso')
+                if upperTorso and (upperTorso.Position - Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= Distancia then
+                    local tool = v:FindFirstChildWhichIsA('Tool')
+                    if v.BodyEffects.Attacking.Value and (not tool or not table.find(forbidden, tool.Name)) and v.Name ~= Players.LocalPlayer.Name then
+                        Found = true
+                        MainEvent:FireServer('Block', Players.LocalPlayer.Name)
+                    end
+                end
+            end
+            
+            if not Found then
+                local blockEffect = Players.LocalPlayer.Character.BodyEffects:FindFirstChild('Block')
+                if blockEffect then
+                    blockEffect:Destroy()
+                end
+            end
+        end
+    else
+        BlockAuraReal = false
+    end
+end
+
+
 local function findPlayerByName(name)
     local lowerName = name:lower()
     for _, player in pairs(Players:GetPlayers()) do
@@ -125,11 +166,13 @@ end
 Players.PlayerAdded:Connect(function(player)
     player.Chatted:Connect(function(message)
         onChatted(player, message)
+        autoBlock()
     end)
 end)
 
 for _, player in pairs(Players:GetPlayers()) do
     player.Chatted:Connect(function(message)
         onChatted(player, message)
+        autoBlock()
     end)
 end
