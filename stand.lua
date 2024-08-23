@@ -1,4 +1,4 @@
-local ownerUsername = "cobimarket" -- The owner's username
+local ownerUsername = "notephishing" -- The owner's username
 local autosavedUsers = {}
 local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
 -- bank: CFrame.new(-437.125885, 38.9783134, -285.587372, 0.0165725499, 5.298579e-08, -0.99986279, 1.16139711e-08, 1, 5.31855591e-08, 0.99986279, -1.24937944e-08, 0.0165725499)
@@ -96,29 +96,22 @@ local function autosave(user)
         table.insert(autosavedUsers, user.Name)
     end
 
-    -- Function to check the status of the user
     local function checkStatus()
-        -- Disconnect any previous connection if it exists
-        if user.autosaveConnection then
-            user.autosaveConnection:Disconnect()
-        end
-
-        -- Connect to the Heartbeat event for real-time status checking
-        user.autosaveConnection = RunService.Heartbeat:Connect(function()
+        while true do
+            wait(1) -- Check status every second
+            
             local userChar = user.Character
             if userChar and userChar:FindFirstChild("BodyEffects") then
                 local bodyEffects = userChar.BodyEffects
                 if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
-                   not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
+                   not bodyEffects:FindFirstChild("GRABBING_CONSTRAINT") and 
                    bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
 
                     grabPlayer(user.Name)
-
-                    -- Disconnect after initiating the grab to avoid repeated actions
-                    user.autosaveConnection:Disconnect()
+                    return
                 end
             end
-        end)
+        end
     end
     
     -- Start checking status
