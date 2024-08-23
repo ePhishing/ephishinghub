@@ -47,14 +47,12 @@ local function grabPlayer(target)
 
             localChar.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
             print("Moved local player to target position: " .. tostring(targetPosition))
-            wait(0.1)
 
             -- Start grabbing
             local grabString = "Grabbing"
             local grabBoolean = false
             ReplicatedStorage.MainEvent:FireServer(grabString, grabBoolean)
             print("Grabbing action fired to server.")
-            wait(0.2)
             
             -- Check if grabbing constraint is applied
             if game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") then
@@ -72,7 +70,7 @@ local function grabPlayer(target)
                 -- Check if the local player is at the targetCFrame
                 if (localChar.PrimaryPart.CFrame.Position - targetCFrame.Position).magnitude < 0.1 then
                     -- Wait 2 seconds before stopping the grabbing action
-                    wait(2)
+                    wait(1)
                     
                     -- Stop grabbing action
                     local stopString = "Grabbing"
