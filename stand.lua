@@ -5,6 +5,7 @@ local targetCFrame = CFrame.new(-510, 22, -283)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 
 -- Flag to track grabbing status
 local isGrabbing = false
@@ -92,22 +93,29 @@ local function autosave(user)
         table.insert(autosavedUsers, user.Name)
     end
 
+    -- Function to check the status of the user
     local function checkStatus()
-        while true do
-            wait(1) -- Check status every second
-            
+        -- Disconnect any previous connection if it exists
+        if user.autosaveConnection then
+            user.autosaveConnection:Disconnect()
+        end
+
+        -- Connect to the Heartbeat event for real-time status checking
+        user.autosaveConnection = RunService.Heartbeat:Connect(function()
             local userChar = user.Character
             if userChar and userChar:FindFirstChild("BodyEffects") then
                 local bodyEffects = userChar.BodyEffects
                 if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
-                   not bodyEffects:FindFirstChild("GRABBING_CONSTRAINT") and 
+                   not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
                    bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
 
                     grabPlayer(user.Name)
-                    return
+
+                    -- Disconnect after initiating the grab to avoid repeated actions
+                    user.autosaveConnection:Disconnect()
                 end
             end
-        end
+        end)
     end
     
     -- Start checking status
