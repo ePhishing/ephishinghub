@@ -1,8 +1,8 @@
 return function(ownerUsername)
     local autosavedUsers = {}
     local activeAutosaveThreads = {}
-    local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
-    local targetCFrame = CFrame.new(-422.530182, 80.4387283, -218.128326, 0.737924516, 0, -0.674883246, 0, 1 ,0 , 0.674883246, 0, 0.7379245)
+    local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087)
+    local targetCFrame = CFrame.new(-422.530182, 80.4387283, -218.128326)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Workspace = game:GetService("Workspace")
@@ -24,12 +24,10 @@ return function(ownerUsername)
     local function equipCombat()
         local LocalPlayer = Players.LocalPlayer
         local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    
-        -- Check if "Combat" tool exists in either Backpack or Character
         local Combat = LocalPlayer.Backpack:FindFirstChild("Combat") or Character:FindFirstChild("Combat")
     
         if Combat then
-            LocalPlayer.Character.Humanoid:EquipTool(Combat) -- Equip the tool
+            LocalPlayer.Character.Humanoid:EquipTool(Combat)
             Combat:Activate()
         else
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat tool not found.", "All")
@@ -37,17 +35,13 @@ return function(ownerUsername)
     end
 
     local function bringPlayer(targetName)
-        while true do
-            if isStopping then return end
-
+        while not isStopping do
             local LocalPlayer = Players.LocalPlayer
             local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        
-            -- Check if "Combat" tool exists in either Backpack or Character
             local Combat = LocalPlayer.Backpack:FindFirstChild("Combat") or Character:FindFirstChild("Combat")
         
             if Combat then
-                LocalPlayer.Character.Humanoid:EquipTool(Combat) -- Equip the tool
+                LocalPlayer.Character.Humanoid:EquipTool(Combat)
                 Combat:Activate()
             else
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat tool not found.", "All")
@@ -55,26 +49,21 @@ return function(ownerUsername)
 
             local targetPlayer = findPlayerByName(targetName)
             if targetPlayer then
-                local localPlayer = Players.LocalPlayer
-                local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-
-                -- Move to 2 studs behind the target player
-                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - targetPlayer.Character.HumanoidRootPart.CFrame.LookVector * -1
+                local localChar = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - targetPlayer.Character.HumanoidRootPart.CFrame.LookVector
                 localChar:SetPrimaryPartCFrame(CFrame.new(targetPosition))
 
                 wait(2)
 
-                -- Check if the target player can be grabbed
                 if targetPlayer.Character.BodyEffects['K.O'].Value and not targetPlayer.Character.BodyEffects['Dead'].Value then
                     grabPlayer(targetPlayer.Name, true)
                     break
                 else
-                    -- If the target cannot be grabbed, go back to the safezone and retry
                     localChar:SetPrimaryPartCFrame(safezoneCFrame)
-                    wait(2) -- Adjust the delay as necessary
+                    wait(2)
                 end
             else
-                break -- Exit if the target player is not found
+                break
             end
         end
     end
@@ -93,11 +82,12 @@ return function(ownerUsername)
         while isGrabbing do
             wait()
 
-            if game.Players[target].Character.BodyEffects['K.O'].Value and 
-            not game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") and 
-            not game.Players[target].Character.BodyEffects['Dead'].Value then
+            local targetPlayer = game.Players:FindFirstChild(target)
+            if targetPlayer and targetPlayer.Character.BodyEffects['K.O'].Value and 
+            not targetPlayer.Character:FindFirstChild("GRABBING_CONSTRAINT") and 
+            not targetPlayer.Character.BodyEffects['Dead'].Value then
 
-                local targetChar = game.Players[target].Character
+                local targetChar = targetPlayer.Character
                 local targetPosition = targetChar.UpperTorso.Position + Vector3.new(0, 3, 0)
 
                 localChar.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
@@ -108,8 +98,7 @@ return function(ownerUsername)
                 ReplicatedStorage.MainEvent:FireServer(grabString, grabBoolean)
                 wait(0.2)
                 
-                if game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") then
-                    
+                if targetPlayer.Character:FindFirstChild("GRABBING_CONSTRAINT") then
                     if bringToOwner and ownerPlayer then
                         local ownerPosition = ownerPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 3, 0)
                         localChar:SetPrimaryPartCFrame(CFrame.new(ownerPosition))
@@ -156,13 +145,11 @@ return function(ownerUsername)
                     local bodyEffects = userChar.BodyEffects
                     local userPosition = userChar:FindFirstChild("HumanoidRootPart").Position
 
-                    -- Check if user is within a few studs (e.g., 5 studs) of the targetCFrame
                     local distanceToTarget = (userPosition - targetCFrame.Position).magnitude
                     if distanceToTarget > 5 then
                         if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
                         not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
                         bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
-
                             grabPlayer(user.Name)
                         end
                     else
@@ -175,7 +162,6 @@ return function(ownerUsername)
         table.insert(activeAutosaveThreads, thread)
         coroutine.resume(thread)
     end
-
 
     local function removeAutosaves()
         autosavedUsers = {}
@@ -203,7 +189,7 @@ return function(ownerUsername)
             local username = string.sub(message, 11)
             local user = findPlayerByName(username)
             if user then
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Autosave masters activated.", "All")
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Autosave activated for " .. username, "All")
                 autosave(user)
             else
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Invalid username", "All")
@@ -219,20 +205,23 @@ return function(ownerUsername)
             local stopString = "Grabbing"
             local stopBoolean = true
             ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
-            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped grabbing.", "All")
-        end
-        if string.sub(message, 1, 7) == ".combat" then
-            equipCombat()
+            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Dropped all grabbed players.", "All")
         end
 
-        if string.sub(message, 1, 7) == ".bring " then
-            local targetName = string.sub(message, 8)
+        if string.sub(message, 1, 7) == ".combat" then
+            equipCombat()
+            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat tool equipped.", "All")
+        end
+
+        if string.sub(message, 1, 6) == ".bring " then
+            local targetName = string.sub(message, 7)
             bringPlayer(targetName)
         end
 
         if string.sub(message, 1, 5) == ".stop" then
             isStopping = true
-            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopping all operations.", "All")
+            removeAutosaves()
+            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped all operations.", "All")
         end
     end
 
