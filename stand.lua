@@ -34,7 +34,7 @@ return function(ownerUsername)
             character.Humanoid:UnequipTools()
             
             -- Look for the "Combat" tool in the backpack
-            local combatTool = localPlayer.Backpack:FindFirstChild("[Combat]")
+            local combatTool = localPlayer.Backpack:FindFirstChild("Combat")
             
             if combatTool then
                 -- Equip the "Combat" tool
