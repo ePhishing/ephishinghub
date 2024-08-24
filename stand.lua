@@ -79,20 +79,28 @@ return function(ownerUsername)
         if not table.find(autosavedUsers, user.Name) then
             table.insert(autosavedUsers, user.Name)
         end
-
+    
         local thread = coroutine.create(function()
             while table.find(autosavedUsers, user.Name) do
                 wait(1)
-                
+    
                 local userChar = user.Character
                 if userChar and userChar:FindFirstChild("BodyEffects") then
                     local bodyEffects = userChar.BodyEffects
-                    if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
-                    not bodyEffects:FindFirstChild("GRABBING_CONSTRAINT") and 
-                    bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
-
-                        grabPlayer(user.Name)
-                        return
+                    local userPosition = userChar:FindFirstChild("HumanoidRootPart").Position
+    
+                    -- Check if user is within a few studs (e.g., 5 studs) of the targetCFrame
+                    local distanceToTarget = (userPosition - targetCFrame.Position).magnitude
+                    if distanceToTarget > 5 then
+                        if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
+                        not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
+                        bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
+    
+                            grabPlayer(user.Name)
+                            return
+                        end
+                    else
+                        print(user.Name .. " is already close to the target position. Skipping grab.")
                     end
                 end
             end
@@ -101,6 +109,7 @@ return function(ownerUsername)
         table.insert(activeAutosaveThreads, thread)
         coroutine.resume(thread)
     end
+
 
     local function removeAutosaves()
         autosavedUsers = {}
