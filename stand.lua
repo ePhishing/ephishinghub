@@ -33,7 +33,7 @@ return function(ownerUsername)
         
             if Combat then
                 LocalPlayer.Character.Humanoid:EquipTool(Combat) -- Equip the tool
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat equipped.", "All")
+                Combat:Activate()
             else
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat tool not found.", "All")
             end
