@@ -24,6 +24,95 @@ return function(ownerUsername)
             end
             return nil
         end
+        -- Function to get a knife if the player doesn't already have one
+        local function getKnife()
+            LocalPlayer.Character.Humanoid:UnequipTools()
+
+            if LocalPlayer.Backpack:FindFirstChild("[Knife]") == nil then
+                local knife = Workspace.Ignored.Shop["[Knife] - $150"]
+                LocalPlayer.Character.HumanoidRootPart.CFrame = knife.Head.CFrame + Vector3.new(0, 3, 0)
+                if (LocalPlayer.Character.HumanoidRootPart.Position - knife.Head.Position).Magnitude <= 50 then
+                    wait(0.3)
+                    fireclickdetector(knife:FindFirstChild("ClickDetector"), 4)
+                    wait(0.1)
+                    pcall(function()
+                        LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack["[Knife]"])
+                    end)
+                    LocalPlayer.Character["[Knife]"].GripPos = Vector3.new(0, 5, 0)
+                    LocalPlayer.Character["[Knife]"].Handle.Size = Vector3.new(50, 50, 50)
+                end
+            else
+                return true
+            end
+        end
+
+        -- Function to bring and kill the player
+        local function bringPlayer(targetName)
+            local targetPlayer = Players:FindFirstChild(targetName)
+            if not targetPlayer then
+                print("Player not found")
+                return
+            end
+
+            local targetChar = targetPlayer.Character
+            if not targetChar then
+                print("Target character not found")
+                return
+            end
+
+            -- Get the knife
+            while not getKnife() do
+                wait()
+            end
+
+            local targetPosition = targetChar:WaitForChild("HumanoidRootPart").Position + Vector3.new(0, 3, 0)
+
+            -- Teleport to the target and kill them
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+
+            while true do
+                wait()
+                if targetChar.BodyEffects['K.O'].Value and not targetChar:FindFirstChild("GRABBING_CONSTRAINT") and not targetChar.BodyEffects['Dead'].Value then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+                    wait(0.1)
+                    local grabString = "Grabbing"
+                    local grabBoolean = false
+                    ReplicatedStorage.MainEvent:FireServer(grabString, grabBoolean)
+                    wait(0.2)
+
+                    -- Kill and grab the player
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + Vector3.new(0, 10, 0))
+                    pcall(function()
+                        LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack["[Knife]"])
+                    end)
+                    wait(0.1)
+                    LocalPlayer.Character["[Knife]"].GripPos = Vector3.new(0, 5, 0)
+                    LocalPlayer.Character["[Knife]"].Handle.Size = Vector3.new(50, 50, 50)
+                    LocalPlayer.Character["[Knife]"]:Activate()
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + Vector3.new(0, 10, 0))
+
+                    break
+                elseif targetChar.BodyEffects['K.O'].Value == false and targetChar.BodyEffects['Dead'].Value == false or targetChar:FindFirstChild("GRABBING_CONSTRAINT") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + Vector3.new(0, 10, 0))
+                    pcall(function()
+                        LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack["[Knife]"])
+                    end)
+                    wait(0.1)
+                    LocalPlayer.Character["[Knife]"].GripPos = Vector3.new(0, 5, 0)
+                    LocalPlayer.Character["[Knife]"].Handle.Size = Vector3.new(50, 50, 50)
+                    LocalPlayer.Character["[Knife]"]:Activate()
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + Vector3.new(0, 10, 0))
+                elseif targetChar.BodyEffects['Dead'].Value then
+                    Workspace.FallenPartsDestroyHeight = math.huge - math.huge
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-0.10987889766693115, -7996.8017578125, -0.1961374431848526)
+                    break
+                end
+            end
+
+            -- Return to the owner
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(ownerPosition)
+        end
+
     
         local function grabPlayer(target)
             local localPlayer = Players.LocalPlayer
@@ -149,6 +238,18 @@ return function(ownerUsername)
             if string.sub(message, 1, 7) == ".remove" then
                 removeAutosaves()
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("All autosaves removed.", "All")
+            end
+
+            if string.sub(message, 1, 5) == ".drop" then
+                local stopString = "Grabbing"
+                local stopBoolean = true
+                ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped grabbing.", "All")
+            end
+
+            if string.sub(message, 1, 7) == ".bring " then
+                local username = string.sub(message, 8)
+                bringPlayer(username)
             end
         end
     
