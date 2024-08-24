@@ -24,32 +24,21 @@ return function(ownerUsername)
             return nil
         end
 
-        -- Define equipCombat function
         local function equipCombat()
-            local localPlayer = Players.LocalPlayer
-            local character = localPlayer.Character
-            if not character or not localPlayer.Backpack then return end
-            
-            -- Unequip any currently equipped tools
-            character.Humanoid:UnequipTools()
-            
-            -- Look for the "Combat" tool in the backpack
-            local combatTool = localPlayer.Backpack:FindFirstChild("Combat")
-            
-            if combatTool then
-                -- Equip the "Combat" tool
-                pcall(function()
-                    localPlayer.Character.Humanoid:EquipTool(combatTool)
-                end)
-                
-                -- Activate the tool (simulate click)
-                pcall(function()
-                    combatTool:Activate()
-                end)
+            local LocalPlayer = Players.LocalPlayer
+            local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        
+            -- Check if "Combat" tool exists in either Backpack or Character
+            local Combat = LocalPlayer.Backpack:FindFirstChild("Combat") or Character:FindFirstChild("Combat")
+        
+            if Combat then
+                LocalPlayer.Character.Humanoid:EquipTool(Combat) -- Equip the tool
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat equipped.", "All")
             else
-                print("Combat tool not found in backpack.")
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat tool not found.", "All")
             end
         end
+        
 
 
         local function grabPlayer(target)
@@ -186,7 +175,6 @@ return function(ownerUsername)
             end
             if string.sub(message, 1, 7) == ".combat" then
                 equipCombat()
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat equipped.", "All")
             end
 
         end
