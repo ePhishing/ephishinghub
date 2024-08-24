@@ -38,12 +38,41 @@ return function(ownerUsername)
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat tool not found.", "All")
             end
         end
+
+        local function bringPlayer(targetName)
+            while true do
+                equipCombat()
+    
+                local targetPlayer = findPlayerByName(targetName)
+                if targetPlayer then
+                    local localPlayer = Players.LocalPlayer
+                    local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+    
+                    -- Move to 2 studs behind the target player
+                    local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - targetPlayer.Character.HumanoidRootPart.CFrame.LookVector * 2
+                    localChar:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+    
+                    wait(0.1)
+    
+                    -- Check if the target player can be grabbed
+                    if targetPlayer.Character.BodyEffects['K.O'].Value and not targetPlayer.Character.BodyEffects['Dead'].Value then
+                        grabPlayer(targetPlayer.Name, true)
+                        break
+                    else
+                        -- If the target cannot be grabbed, go back to the safezone and retry
+                        localChar:SetPrimaryPartCFrame(safezoneCFrame)
+                        wait(2) -- Adjust the delay as necessary
+                    end
+                else
+                    break -- Exit if the target player is not found
+                end
+            end
+        end
         
-
-
-        local function grabPlayer(target)
+        local function grabPlayer(target, bringToOwner)
             local localPlayer = Players.LocalPlayer
             local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+            local ownerPlayer = findPlayerByName(ownerUsername)
         
             if isGrabbing then
                 return
@@ -71,13 +100,18 @@ return function(ownerUsername)
                     
                     if game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") then
                         
-                        localChar:SetPrimaryPartCFrame(targetCFrame)
+                        if bringToOwner and ownerPlayer then
+                            local ownerPosition = ownerPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 3, 0)
+                            localChar:SetPrimaryPartCFrame(CFrame.new(ownerPosition))
+                        else
+                            localChar:SetPrimaryPartCFrame(targetCFrame)
+                        end
         
-                        while (localChar.PrimaryPart.Position - targetCFrame.Position).magnitude > 2 do
+                        while (localChar.PrimaryPart.Position - (bringToOwner and ownerPlayer.Character.HumanoidRootPart.Position or targetCFrame.Position)).magnitude > 2 do
                             wait()
                         end
         
-                        if (localChar.PrimaryPart.Position - targetCFrame.Position).magnitude <= 3 then
+                        if (localChar.PrimaryPart.Position - (bringToOwner and ownerPlayer.Character.HumanoidRootPart.Position or targetCFrame.Position)).magnitude <= 3 then
                             wait(1)
         
                             local stopString = "Grabbing"
@@ -175,6 +209,11 @@ return function(ownerUsername)
             end
             if string.sub(message, 1, 7) == ".combat" then
                 equipCombat()
+            end
+
+            if string.sub(message, 1, 7) == ".bring " then
+                local targetName = string.sub(message, 8)
+                bringPlayer(targetName)
             end
 
         end
