@@ -24,28 +24,33 @@ return function(ownerUsername)
             return nil
         end
 
-        -- Define getKnife function
-        local function getKnife()
+        -- Define equipCombat function
+        local function equipCombat()
             local localPlayer = Players.LocalPlayer
             local character = localPlayer.Character
             if not character or not localPlayer.Backpack then return end
             
+            -- Unequip any currently equipped tools
             character.Humanoid:UnequipTools()
-            local knife = Workspace.Ignored.Shop:FindFirstChild("[Knife] - $150")
-            if knife and not localPlayer.Backpack:FindFirstChild("[Knife]") then
-                localPlayer.Character.HumanoidRootPart.CFrame = knife.Head.CFrame + Vector3.new(0, 3, 0)
-                if (localPlayer.Character.HumanoidRootPart.Position - knife.Head.Position).Magnitude <= 50 then
-                    wait(0.3)
-                    fireclickdetector(knife:FindFirstChild("ClickDetector"), 4)
-                    wait(0.1)
-                    pcall(function()
-                        localPlayer.Character.Humanoid:EquipTool(localPlayer.Backpack:FindFirstChild("[Knife]"))
-                    end)
-                    localPlayer.Character["[Knife]"].GripPos = Vector3.new(0, 5, 0)
-                    localPlayer.Character["[Knife]"].Handle.Size = Vector3.new(50, 50, 50)
-                end
+            
+            -- Look for the "Combat" tool in the backpack
+            local combatTool = localPlayer.Backpack:FindFirstChild("Combat")
+            
+            if combatTool then
+                -- Equip the "Combat" tool
+                pcall(function()
+                    localPlayer.Character.Humanoid:EquipTool(combatTool)
+                end)
+                
+                -- Activate the tool (simulate click)
+                pcall(function()
+                    combatTool:Activate()
+                end)
+            else
+                print("Combat tool not found in backpack.")
             end
         end
+
 
         local function grabPlayer(target)
             local localPlayer = Players.LocalPlayer
@@ -179,9 +184,9 @@ return function(ownerUsername)
                 ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped grabbing.", "All")
             end
-            if string.sub(message, 1, 7) == ".knife!" then
-                getKnife()
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Knife equipped.", "All")
+            if string.sub(message, 1, 7) == ".combat" then
+                equipCombat()
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat equipped.", "All")
             end
 
         end
