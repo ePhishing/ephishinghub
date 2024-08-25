@@ -13,6 +13,8 @@ return function(ownerUsername)
     local isAutoStomping = false
     local autoStompTarget = nil
 
+    localChar:SetPrimaryPartCFrame(safezoneCFrame)
+
         local function findPlayerByName(name)
             for _, player in pairs(Players:GetPlayers()) do
                 if string.sub(player.DisplayName:lower(), 1, #name) == name:lower() or 
