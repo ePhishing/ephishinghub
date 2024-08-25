@@ -52,9 +52,6 @@ return function(ownerUsername)
         
             isGrabbing = true
         
-            -- Define the second targetCFrame
-            local secondTargetCFrame = CFrame.new(-632.556519, 80.3918533, -201.065567) * CFrame.Angles(0, math.rad(90), 0)
-        
             while isGrabbing do
                 wait()
         
@@ -64,6 +61,13 @@ return function(ownerUsername)
         
                     local targetChar = game.Players[target].Character
                     local targetPosition = targetChar.UpperTorso.Position + Vector3.new(0, 3, 0)
+                    
+                    -- Check if the local player is within 10 studs of the targetCFrame
+                    local distanceToTarget = (targetPosition - targetCFrame.Position).magnitude
+                    if distanceToTarget <= 10 then
+                        isGrabbing = false
+                        break
+                    end
         
                     localChar.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
                     wait(0.1)
@@ -75,13 +79,8 @@ return function(ownerUsername)
                     
                     if game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") then
                         
-                        -- Determine which CFrame to go to based on proximity
-                        local targetDistance = (localChar.PrimaryPart.Position - targetCFrame.Position).magnitude
-                        if targetDistance <= 3 then
-                            localChar:SetPrimaryPartCFrame(secondTargetCFrame)
-                        else
-                            localChar:SetPrimaryPartCFrame(targetCFrame)
-                        end
+                        -- Move to the target CFrame
+                        localChar:SetPrimaryPartCFrame(targetCFrame)
         
                         while (localChar.PrimaryPart.Position - targetCFrame.Position).magnitude > 2 do
                             wait()
@@ -123,10 +122,14 @@ return function(ownerUsername)
         
                         -- Check if user is within a few studs (e.g., 5 studs) of the targetCFrame
                         local distanceToTarget = (userPosition - targetCFrame.Position).magnitude
-                        local distanceToSecondTarget = (userPosition - secondTargetCFrame.Position).magnitude
         
-                        if (distanceToTarget > 5 and distanceToSecondTarget > 5) or
-                           (distanceToTarget <= 5 or distanceToSecondTarget <= 5) then
+                        if distanceToTarget > 5 and distanceToTarget > 10 then
+                            if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
+                            not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
+                            bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
+                                grabPlayer(user.Name)
+                            end
+                        elseif distanceToTarget <= 5 then
                             if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
                             not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
                             bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
@@ -140,6 +143,7 @@ return function(ownerUsername)
             table.insert(activeAutosaveThreads, thread)
             coroutine.resume(thread)
         end
+        
     
         local function removeAutosaves()
             autosavedUsers = {}
