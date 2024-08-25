@@ -20,10 +20,10 @@ return function(ownerUsername)
         for _, player in pairs(Players:GetPlayers()) do
             if player.DisplayName:lower():find(name) or 
                player.Name:lower():find(name) then
-                return player
+                return player, player.Name  -- Return the player object and the exact username
             end
         end
-        return nil
+        return nil, nil
     end
     
     
@@ -208,11 +208,12 @@ return function(ownerUsername)
         end
 
         if string.sub(message, 1, 11) == ".autostomp " then
-            local username = string.sub(message, 12)
-            print("Autostomp command received for username: " .. username) -- Debugging print
-            local user = findPlayerByName(username)
+            local partialName = string.sub(message, 12)
+            print("Autostomp command received for partial username: " .. partialName) -- Debugging print
+            local user, correctName = findPlayerByName(partialName)
+            
             if user then
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp activated for " .. username, "All")
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp activated for " .. correctName, "All")
                 
                 -- Stop any previous auto-stomp thread for this player
                 for _, thread in pairs(activeAutostompThreads) do
@@ -220,7 +221,7 @@ return function(ownerUsername)
                         coroutine.close(thread.co)
                     end
                 end
-    
+        
                 -- Start a new auto-stomp thread
                 local thread = {
                     user = user,
@@ -231,9 +232,10 @@ return function(ownerUsername)
                 table.insert(activeAutostompThreads, thread)
                 coroutine.resume(thread.co)
             else
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Invalid username: " .. username, "All")
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Invalid username: " .. partialName, "All")
             end
         end
+        
     
         if string.sub(message, 1, 5) == ".stop" then
             -- Stop all active auto-stomp threads
