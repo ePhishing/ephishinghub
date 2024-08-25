@@ -24,23 +24,6 @@ return function(ownerUsername)
             return nil
         end
 
-        local function equipCombat()
-            local LocalPlayer = Players.LocalPlayer
-            local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        
-            -- Check if "Combat" tool exists in either Backpack or Character
-            local Combat = LocalPlayer.Backpack:FindFirstChild("Combat") or Character:FindFirstChild("Combat")
-        
-            if Combat then
-                LocalPlayer.Character.Humanoid:EquipTool(Combat) -- Equip the tool
-                Combat:Activate()
-            else
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat tool not found.", "All")
-            end
-        end
-        
-
-
         local function grabPlayer(target)
             local localPlayer = Players.LocalPlayer
             local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
@@ -173,10 +156,6 @@ return function(ownerUsername)
                 ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped grabbing.", "All")
             end
-            if string.sub(message, 1, 7) == ".combat" then
-                equipCombat()
-            end
-
         end
     
         Players.PlayerAdded:Connect(function(player)
