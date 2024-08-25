@@ -14,6 +14,21 @@ return function(ownerUsername)
     local localPlayer = Players.LocalPlayer
     local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 
+    -- Create a platform for the safezone
+    local function createSafezonePlatform()
+        local platform = Instance.new("Part")
+        platform.Name = "SafezonePlatform"
+        platform.Size = Vector3.new(1000, 1, 1000)  -- Size of the platform (adjust as needed)
+        platform.Position = safezoneCFrame.Position
+        platform.Anchored = true
+        platform.CanCollide = true
+        platform.BrickColor = BrickColor.new("Grey")  -- Color of the platform
+        platform.Parent = Workspace
+    end
+    
+    -- Call the function to create the platform
+    createSafezonePlatform()
+
     localChar:SetPrimaryPartCFrame(safezoneCFrame)
 
     local function findPlayerByName(name)
