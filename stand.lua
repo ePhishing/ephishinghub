@@ -4,7 +4,7 @@ return function(ownerUsername)
     local activeAutostompThreads = {}
     local activeAutosaveThreads = {}
     local isGrabbing = false
-    local safezoneCFrame = CFrame.new(0, -400, 0)  -- Updated safezone position
+    local safezoneCFrame = CFrame.new(0, -1000, 0)  -- Updated safezone position
     -- local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
     local targetCFrame = CFrame.new(-451.999084, 80.4387283, -207.518799, 0.7223894, 0, -0.69, 0, 1 ,0 , 0.691, 0, 0.72)
     local Players = game:GetService("Players")
@@ -18,7 +18,7 @@ return function(ownerUsername)
     local function createSafezonePlatform()
         local platform = Instance.new("Part")
         platform.Name = "SafezonePlatform"
-        platform.Size = Vector3.new(1000, 1, 1000)  -- Size of the platform (adjust as needed)
+        platform.Size = Vector3.new(50, 1, 50)  -- Size of the platform (adjust as needed)
         platform.Position = safezoneCFrame.Position
         platform.Anchored = true
         platform.CanCollide = true
