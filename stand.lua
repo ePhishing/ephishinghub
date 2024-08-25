@@ -12,7 +12,11 @@ return function(ownerUsername)
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local Workspace = game:GetService("Workspace")
         local RunService = game:GetService("RunService")
+        local localPlayer = Players.LocalPlayer
+        local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
     
+        localChar:SetPrimaryPartCFrame(safezoneCFrame)
+
         local isGrabbing = false
 
         local function findPlayerByName(name)
