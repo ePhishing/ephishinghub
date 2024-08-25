@@ -26,8 +26,6 @@ return function(ownerUsername)
         return nil, nil
     end
     
-    
-
     local function grabPlayer(target)
         local localPlayer = Players.LocalPlayer
         local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
@@ -199,21 +197,19 @@ return function(ownerUsername)
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("All autosaves removed.", "All")
         end
 
-        if string.sub(message, 1, 5) == ".drop" then
+        if string.sub(message, 1, 5) == ".throw" then
             local stopString = "Grabbing"
             local stopBoolean = true
             ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
             isGrabbing = false
-            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Dropped any target.", "All")
+            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Threw any target.", "All")
         end
 
         if string.sub(message, 1, 11) == ".autostomp " then
             local username = string.sub(message, 12)
             local user = findPlayerByName(username)
-            
             if user then
-                -- Use the player's name or display name in the message
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp activated for " .. user.Name, "All")
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp activated for " .. username, "All")
                 
                 -- Stop any previous auto-stomp thread for this player
                 for _, thread in pairs(activeAutostompThreads) do
@@ -221,7 +217,7 @@ return function(ownerUsername)
                         coroutine.close(thread.co)
                     end
                 end
-        
+    
                 -- Start a new auto-stomp thread
                 local thread = {
                     user = user,
@@ -232,7 +228,6 @@ return function(ownerUsername)
                 table.insert(activeAutostompThreads, thread)
                 coroutine.resume(thread.co)
             else
-                -- If user is nil, show that the username was invalid
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Invalid username: " .. username, "All")
             end
         end
