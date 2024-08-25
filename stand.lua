@@ -110,11 +110,8 @@ return function(ownerUsername)
                     
                     ReplicatedStorage.MainEvent:FireServer("Stomp")
                     localChar.HumanoidRootPart.CFrame = CFrame.new(UpperPosition)
-                
-                elseif bodyEffects['Dead'].Value then
-                    wait(1)
                 else
-                    break
+                    wait(1)
                 end
             end
             localChar:SetPrimaryPartCFrame(safezoneCFrame)
