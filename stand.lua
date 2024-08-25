@@ -91,32 +91,28 @@ return function(ownerUsername)
     local function autoStomp(user)
         local userChar = user.Character
         if not userChar or not userChar:FindFirstChild("BodyEffects") then return end
-
+    
         local bodyEffects = userChar.BodyEffects
-        local UpperPosition = userChar.UpperTorso.Position + Vector3.new(0, 3, 0)
-
+        local UpperTorso = userChar:FindFirstChild("UpperTorso")
+    
+        if not UpperTorso then return end
+        local UpperPosition = UpperTorso.Position + Vector3.new(0, 3, 0)
+    
         while true do
             wait(1)
-
-            -- Check if the user is in the correct state
+    
+            -- Recheck if the user is in the correct state
             if bodyEffects['K.O'].Value and 
                not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
                not bodyEffects['Dead'].Value then
-
-                -- Perform the stomp action 3 times
-                for i = 1, 3 do
-                    localChar.HumanoidRootPart.CFrame = CFrame.new(UpperPosition)
-                    ReplicatedStorage.MainEvent:FireServer("Stomp")
-                    wait(0.5)
-                    localChar:SetPrimaryPartCFrame(safezoneCFrame)
-                    wait(0.1)
-                    localChar.HumanoidRootPart.CFrame = CFrame.new(UpperPosition)
-                    wait(0.5)
-                    ReplicatedStorage.MainEvent:FireServer("Stomp")    
-                    wait(0.5) -- Add a short delay between stomps
-                end
-
-                -- Return to the safezone
+    
+                -- Move the local character to the target position and stomp
+                localChar.HumanoidRootPart.CFrame = CFrame.new(UpperPosition)
+                ReplicatedStorage.MainEvent:FireServer("Stomp")
+    
+                wait(0.5) -- Short delay to simulate the stomp action
+    
+                -- Return to the safe zone
                 localChar:SetPrimaryPartCFrame(safezoneCFrame)
                 break
             end
