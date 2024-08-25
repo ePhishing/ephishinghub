@@ -98,7 +98,7 @@ return function(ownerUsername)
         if not UpperTorso then return end
     
         while true do
-            wait(1)
+            wait(0.1)
     
             -- Update UpperPosition to the latest position of UpperTorso
             local UpperPosition = UpperTorso.Position + Vector3.new(0, 3, 0)
@@ -108,11 +108,8 @@ return function(ownerUsername)
                not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
                not bodyEffects['Dead'].Value then
     
-                -- Move the local character to the updated position and stomp
-                localChar.HumanoidRootPart.CFrame = CFrame.new(UpperPosition)
                 ReplicatedStorage.MainEvent:FireServer("Stomp")
-    
-                wait(0.5) -- Short delay to simulate the stomp action
+                localChar.HumanoidRootPart.CFrame = CFrame.new(UpperPosition)
     
             else
                 -- If the user is dead or not in the correct state, break the loop
