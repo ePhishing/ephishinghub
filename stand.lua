@@ -1,8 +1,7 @@
 return function(ownerUsername)
     -- local ownerUsername = "notephishing" -- The owner's username
     local autosavedUsers = {}
-    local activeAutosaveThreads = {}
-    local activeAutostompThread = nil
+    local activeAutostompThreads = {}
     local isGrabbing = false
     local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
     local targetCFrame = CFrame.new(-451.999084, 80.4387283, -207.518799, 0.7223894, 0, -0.69, 0, 1 ,0 , 0.691, 0, 0.72)
@@ -94,32 +93,23 @@ return function(ownerUsername)
 
         local bodyEffects = userChar.BodyEffects
         local targetPosition = userChar:FindFirstChild("UpperTorso").Position + Vector3.new(0, 3, 0)
-        
+
         while true do
             wait(1)
 
-            -- If the target is not in the correct state, or is dead, stop the auto-stomp
-            if not (bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
-                not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
-                bodyEffects['Dead'] and not bodyEffects['Dead'].Value) then
-                break
-            end
+            -- Check if the user is in the correct state
+            if bodyEffects['K.O'].Value and 
+               not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
+               not bodyEffects['Dead'].Value then
 
-            -- Check local player health
-            if localChar:FindFirstChildOfClass("Humanoid") and localChar.Humanoid.Health <= 99 then
-                -- Move to safezone if health is 99 or below
-                localChar:SetPrimaryPartCFrame(safezoneCFrame)
-                wait(2) -- Wait for a bit before going back
-                localChar:SetPrimaryPartCFrame(targetCFrame)
-            end
+                -- Perform the stomp action 3 times
+                for i = 1, 3 do
+                    localChar:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+                    ReplicatedStorage.MainEvent:FireServer("Stomp")
+                    wait(0.1) -- Add a short delay between stomps
+                end
 
-            -- Move to the target's position
-            localChar.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-            ReplicatedStorage.MainEvent:FireServer("Stomp")
-            wait(1) -- Add a delay for stomp action
-
-            -- Check if the target's health is 0 to return to safezone
-            if userChar:FindFirstChildOfClass("Humanoid") and userChar.Humanoid.Health <= 0 then
+                -- Return to the safezone
                 localChar:SetPrimaryPartCFrame(safezoneCFrame)
                 break
             end
@@ -213,24 +203,35 @@ return function(ownerUsername)
             local user = findPlayerByName(username)
             if user then
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp activated.", "All")
-                if activeAutostompThread then
-                    coroutine.close(activeAutostompThread)
+
+                -- Stop any previous auto-stomp thread for this player
+                for _, thread in pairs(activeAutostompThreads) do
+                    if thread.user == user then
+                        coroutine.close(thread.co)
+                    end
                 end
-                activeAutostompThread = coroutine.create(function()
-                    autoStomp(user)
-                end)
-                coroutine.resume(activeAutostompThread)
+
+                -- Start a new auto-stomp thread
+                local thread = {
+                    user = user,
+                    co = coroutine.create(function()
+                        autoStomp(user)
+                    end)
+                }
+                table.insert(activeAutostompThreads, thread)
+                coroutine.resume(thread.co)
             else
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Invalid username", "All")
             end
         end
 
         if string.sub(message, 1, 5) == ".stop" then
-            if activeAutostompThread then
-                coroutine.close(activeAutostompThread)
-                activeAutostompThread = nil
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp stopped.", "All")
+            -- Stop all active auto-stomp threads
+            for _, thread in pairs(activeAutostompThreads) do
+                coroutine.close(thread.co)
             end
+            activeAutostompThreads = {}
+            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp stopped.", "All")
         end
     end
 
