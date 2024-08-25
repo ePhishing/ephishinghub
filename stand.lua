@@ -7,6 +7,7 @@ return function(ownerUsername)
         -- taco: CFrame.new(583.931641, 51.061409, -476.954193, -0.999745369, 1.49123665e-08, -0.0225663595, 1.44838328e-08, 1, 1.91533687e-08, 0.0225663595, 1.88216429e-08, -0.999745369)
         -- inside bank: CFrame.new(-510, 22, -283)
         local targetCFrame = CFrame.new(-422.530182, 80.4387283, -218.128326, 0.737924516, 0, -0.674883246, 0, 1 ,0 , 0.674883246, 0, 0.7379245)
+        local secondTargetCFrame = CFrame.new(-632.556519, 80.3918533, -201.065567) * CFrame.Angles(0, math.rad(90), 0)
         local Players = game:GetService("Players")
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local Workspace = game:GetService("Workspace")
@@ -122,20 +123,15 @@ return function(ownerUsername)
         
                         -- Check if user is within a few studs (e.g., 5 studs) of the targetCFrame
                         local distanceToTarget = (userPosition - targetCFrame.Position).magnitude
-                        if distanceToTarget > 5 then
+                        local distanceToSecondTarget = (userPosition - secondTargetCFrame.Position).magnitude
+        
+                        if (distanceToTarget > 5 and distanceToSecondTarget > 5) or
+                           (distanceToTarget <= 5 or distanceToSecondTarget <= 5) then
                             if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
                             not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
                             bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
-        
                                 grabPlayer(user.Name)
                             end
-                        else
-                            -- Move the local player to the second targetCFrame
-                            print(user.Name .. " is already close to the target position. Moving to the second target position.")
-                            local localPlayer = Players.LocalPlayer
-                            local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-                            local secondTargetCFrame = CFrame.new(-632.556519, 80.3918533, -201.065567) * CFrame.Angles(0, math.rad(90), 0)
-                            localChar:SetPrimaryPartCFrame(secondTargetCFrame)
                         end
                     end
                 end
