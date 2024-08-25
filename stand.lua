@@ -16,14 +16,16 @@ return function(ownerUsername)
     localChar:SetPrimaryPartCFrame(safezoneCFrame)
 
     local function findPlayerByName(name)
+        name = name:lower()
         for _, player in pairs(Players:GetPlayers()) do
-            if string.sub(player.DisplayName:lower(), 1, #name) == name:lower() or 
-            string.sub(player.Name:lower(), 1, #name) == name:lower() then
+            if player.DisplayName:lower():sub(1, #name) == name or 
+               player.Name:lower():sub(1, #name) == name then
                 return player
             end
         end
         return nil
     end
+    
 
     local function grabPlayer(target)
         local localPlayer = Players.LocalPlayer
