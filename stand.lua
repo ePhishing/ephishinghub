@@ -205,8 +205,8 @@ return function(ownerUsername)
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Dropped any target.", "All")
         end
 
-        if string.sub(message, 1, 8) == ".autostomp " then
-            local username = string.sub(message, 10)
+        if string.sub(message, 1, 11) == ".autostomp " then
+            local username = string.sub(message, 12)
             print("Autostomp command received for username: " .. username) -- Debugging print
             local user = findPlayerByName(username)
             if user then
