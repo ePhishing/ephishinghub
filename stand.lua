@@ -177,8 +177,8 @@ return function(ownerUsername)
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
         end
 
-        if string.sub(message, 1, 11) == ".autosave " then
-            local username = string.sub(message, 12)
+        if string.sub(message, 1, 10) == ".autosave " then
+            local username = string.sub(message, 11)
             local user = findPlayerByName(username)
             if user then
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Autosave masters activated.", "All")
