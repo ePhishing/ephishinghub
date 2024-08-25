@@ -1,5 +1,5 @@
 return function(ownerUsername)
-    -- local ownerUsername = "notephishing" -- The owner's username
+        local ownerUsername = "notephishing" -- The owner's username
         local autosavedUsers = {}
         local activeAutosaveThreads = {}
         local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
