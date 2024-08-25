@@ -1,23 +1,17 @@
 return function(ownerUsername)
-    -- local ownerUsername = "notephishing" -- The owner's username
-        local autosavedUsers = {}
-        local activeAutosaveThreads = {}
-        local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
-        -- bank: CFrame.new(-437.125885, 38.9783134, -285.587372, 0.0165725499, 5.298579e-08, -0.99986279, 1.16139711e-08, 1, 5.31855591e-08, 0.99986279, -1.24937944e-08, 0.0165725499)
-        -- taco: CFrame.new(583.931641, 51.061409, -476.954193, -0.999745369, 1.49123665e-08, -0.0225663595, 1.44838328e-08, 1, 1.91533687e-08, 0.0225663595, 1.88216429e-08, -0.999745369)
-        -- inside bank: CFrame.new(-510, 22, -283)
-        local targetCFrame = CFrame.new(-451.999084, 80.4387283, -207.518799, 0.7223894, 0, -0.69, 0, 1 ,0 , 0.691, 0, 0.72)
-        local secondTargetCFrame = CFrame.new(-632.556519, 80.3918533, -201.065567) * CFrame.Angles(0, math.rad(90), 0)
-        local Players = game:GetService("Players")
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local Workspace = game:GetService("Workspace")
-        local RunService = game:GetService("RunService")
-        local localPlayer = Players.LocalPlayer
-        local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-    
-        localChar:SetPrimaryPartCFrame(safezoneCFrame)
-
-        local isGrabbing = false
+    -- Initialization and variable declarations
+    local autosavedUsers = {}
+    local activeAutosaveThreads = {}
+    local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
+    local targetCFrame = CFrame.new(-451.999084, 80.4387283, -207.518799, 0.7223894, 0, -0.69, 0, 1, 0, 0.691, 0, 0.72)
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Workspace = game:GetService("Workspace")
+    local localPlayer = Players.LocalPlayer
+    local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+    local isGrabbing = false
+    local isAutoStomping = false
+    local autoStompTarget = nil
 
         local function findPlayerByName(name)
             for _, player in pairs(Players:GetPlayers()) do
@@ -42,6 +36,64 @@ return function(ownerUsername)
             else
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat tool not found.", "All")
             end
+        end
+
+                -- Function to start auto-stomp
+        local function startAutoStomp(target)
+            if isAutoStomping then
+                return
+            end
+
+            isAutoStomping = true
+            autoStompTarget = game.Players:FindFirstChild(target)
+
+            coroutine.wrap(function()
+                while isAutoStomping and autoStompTarget do
+                    local localPlayer = Players.LocalPlayer
+                    local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+                    local targetChar = autoStompTarget.Character
+
+                    if targetChar and targetChar:FindFirstChild("BodyEffects") then
+                        local bodyEffects = targetChar.BodyEffects
+                        local targetPosition = targetChar.UpperTorso.Position + Vector3.new(0, 3, 0)
+                        local localHealth = localChar.Humanoid.Health
+
+                        -- Go to target and stomp if they are K.O. but not dead
+                        if bodyEffects['K.O'] and bodyEffects['K.O'].Value and 
+                        not targetChar:FindFirstChild("GRABBING_CONSTRAINT") and 
+                        bodyEffects['Dead'] and not bodyEffects['Dead'].Value then
+
+                            localChar.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+                            wait(0.1)
+
+                            -- Perform the stomp action
+                            ReplicatedStorage.MainEvent:FireServer("Stomp")
+                            wait(0.5)  -- Adjust delay as needed
+
+                            -- Return to safezone if health drops below 100
+                            if localChar.Humanoid.Health < 100 then
+                                localChar:SetPrimaryPartCFrame(safezoneCFrame)
+                                wait(1)
+                                localChar:SetPrimaryPartCFrame(targetCFrame)
+                                wait(1)
+                                ReplicatedStorage.MainEvent:FireServer("Stomp")
+                                wait(0.5)
+                            end
+
+                            -- Return to safezone after stomping
+                            localChar:SetPrimaryPartCFrame(safezoneCFrame)
+                        end
+                    end
+
+                    wait(1)  -- Adjust delay as needed
+                end
+            end)()
+        end
+
+        -- Function to stop auto-stomp
+        local function stopAutoStomp()
+            isAutoStomping = false
+            autoStompTarget = nil
         end
         
 
@@ -193,6 +245,14 @@ return function(ownerUsername)
             end
             if string.sub(message, 1, 7) == ".combat" then
                 equipCombat()
+            end
+            if string.sub(message, 1, 12) == ".autostomp " then
+                local targetName = string.sub(message, 13)
+                startAutoStomp(targetName)
+            end
+    
+            if message == ".stop" then
+                stopAutoStomp()
             end
 
         end
