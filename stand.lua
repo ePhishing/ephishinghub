@@ -90,36 +90,58 @@ return function(ownerUsername)
     end
 
     local function autoStomp(user)
-        local function stompLoop()
+        local function isValidState()
             local userChar = user.Character
-            if not userChar or not userChar:FindFirstChild("BodyEffects") then return end
+            if not userChar or not userChar:FindFirstChild("BodyEffects") then return false end
             
             local bodyEffects = userChar.BodyEffects
             local UpperTorso = userChar:FindFirstChild("UpperTorso")
             
-            if not UpperTorso then return end
+            if not UpperTorso then return false end
     
-            while true do
-                wait(0.1)
-                
-                local UpperPosition = UpperTorso.Position + Vector3.new(0, 3, 0)
-                
-                if bodyEffects['K.O'].Value and 
+            -- Check if the user is in a valid state for stomping
+            return bodyEffects['K.O'].Value and 
                    not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
-                   not bodyEffects['Dead'].Value then
-                    
-                    ReplicatedStorage.MainEvent:FireServer("Stomp")
-                    localChar.HumanoidRootPart.CFrame = CFrame.new(UpperPosition)
-                else
-                    wait(1)
-                end
-            end
-            localChar:SetPrimaryPartCFrame(safezoneCFrame)
+                   not bodyEffects['Dead'].Value
         end
-        
-        stompLoop()
-    end    
     
+        while true do
+            -- Wait in the safe zone until the user is ready
+            localChar:SetPrimaryPartCFrame(safezoneCFrame)
+            
+            -- Wait until the user is in a valid state
+            while not isValidState() do
+                wait(1)  -- Wait before rechecking
+            end
+            
+            -- Proceed with stomping
+            local userChar = user.Character
+            local bodyEffects = userChar.BodyEffects
+            local UpperTorso = userChar:FindFirstChild("UpperTorso")
+            local UpperPosition = UpperTorso.Position + Vector3.new(0, 3, 0)
+            
+            if UpperTorso then
+                ReplicatedStorage.MainEvent:FireServer("Stomp")
+                localChar.HumanoidRootPart.CFrame = CFrame.new(UpperPosition)
+            end
+            
+            -- Return to the safe zone
+            localChar:SetPrimaryPartCFrame(safezoneCFrame)
+    
+            -- Handle the case when the user is dead
+            while bodyEffects['Dead'].Value do
+                wait(1)  -- Wait before rechecking
+    
+                -- Revalidate the user character
+                userChar = user.Character
+                if not userChar or not userChar:FindFirstChild("BodyEffects") then
+                    break  -- Exit loop if character is no longer valid
+                end
+                
+                bodyEffects = userChar.BodyEffects
+            end
+        end
+    end
 
     local function autosave(user)
         if not table.find(autosavedUsers, user.Name) then
