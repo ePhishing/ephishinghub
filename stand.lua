@@ -93,7 +93,8 @@ return function(ownerUsername)
         if not userChar or not userChar:FindFirstChild("BodyEffects") then return end
 
         local bodyEffects = userChar.BodyEffects
-        local targetPosition = userChar:FindFirstChild("UpperTorso").Position + Vector3.new(0, 3, 0)
+        local LowerPosition = userChar:FindFirstChild("LowerTorso").Position + Vector3.new(0, 3, 0)
+        local UpperPosition = userChar:FindFirstChild("UpperTorso").Position + Vector3.new(0, 3, 0)
 
         while true do
             wait(1)
@@ -105,9 +106,14 @@ return function(ownerUsername)
 
                 -- Perform the stomp action 3 times
                 for i = 1, 3 do
-                    localChar:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+                    localChar:SetPrimaryPartCFrame(CFrame.new(LowerPosition))
                     ReplicatedStorage.MainEvent:FireServer("Stomp")
-                    wait(0.1) -- Add a short delay between stomps
+                    wait(0.5)
+                    localChar:SetPrimaryPartCFrame(safezoneCFrame)
+                    localChar:SetPrimaryPartCFrame(CFrame.new(UpperPosition))
+                    wait(0.5)
+                    ReplicatedStorage.MainEvent:FireServer("Stomp")    
+                    wait(0.5) -- Add a short delay between stomps
                 end
 
                 -- Return to the safezone
@@ -199,8 +205,8 @@ return function(ownerUsername)
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Dropped any target.", "All")
         end
 
-        if string.sub(message, 1, 11) == ".autostomp " then
-            local username = string.sub(message, 12)
+        if string.sub(message, 1, 8) == ".autostomp " then
+            local username = string.sub(message, 10)
             print("Autostomp command received for username: " .. username) -- Debugging print
             local user = findPlayerByName(username)
             if user then
