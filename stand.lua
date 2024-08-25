@@ -24,6 +24,23 @@ return function(ownerUsername)
             return nil
         end
 
+        local function equipCombat()
+            local LocalPlayer = Players.LocalPlayer
+            local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        
+            -- Check if "Combat" tool exists in either Backpack or Character
+            local Combat = LocalPlayer.Backpack:FindFirstChild("Combat") or Character:FindFirstChild("Combat")
+        
+            if Combat then
+                LocalPlayer.Character.Humanoid:EquipTool(Combat) -- Equip the tool
+                Combat:Activate()
+            else
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Combat tool not found.", "All")
+            end
+        end
+        
+
+
         local function grabPlayer(target)
             local localPlayer = Players.LocalPlayer
             local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
@@ -33,6 +50,9 @@ return function(ownerUsername)
             end
         
             isGrabbing = true
+        
+            -- Define the second targetCFrame
+            local secondTargetCFrame = CFrame.new(-632.556519, 80.3918533, -201.065567, 0.00621628761, 0, 1, 0, 0.99998068, 0, 0.00621628761)
         
             while isGrabbing do
                 wait()
@@ -54,7 +74,13 @@ return function(ownerUsername)
                     
                     if game:GetService("Workspace").Players:WaitForChild(target):FindFirstChild("GRABBING_CONSTRAINT") then
                         
-                        localChar:SetPrimaryPartCFrame(targetCFrame)
+                        -- Determine which CFrame to go to based on proximity
+                        local targetDistance = (localChar.PrimaryPart.Position - targetCFrame.Position).magnitude
+                        if targetDistance <= 3 then
+                            localChar:SetPrimaryPartCFrame(secondTargetCFrame)
+                        else
+                            localChar:SetPrimaryPartCFrame(targetCFrame)
+                        end
         
                         while (localChar.PrimaryPart.Position - targetCFrame.Position).magnitude > 2 do
                             wait()
@@ -78,6 +104,7 @@ return function(ownerUsername)
                 end
             end
         end
+        
         
         local function autosave(user)
             if not table.find(autosavedUsers, user.Name) then
@@ -103,7 +130,12 @@ return function(ownerUsername)
                                 grabPlayer(user.Name)
                             end
                         else
-                            print(user.Name .. " is already close to the target position. Skipping grab.")
+                            -- Move the local player to the second targetCFrame
+                            print(user.Name .. " is already close to the target position. Moving to the second target position.")
+                            local localPlayer = Players.LocalPlayer
+                            local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+                            local secondTargetCFrame = CFrame.new(-632.556519, 80.3918533, -201.065567, 0.00621628761, 0, 1, 0, 0.99998068, 0, 0.00621628761)
+                            localChar:SetPrimaryPartCFrame(secondTargetCFrame)
                         end
                     end
                 end
@@ -112,7 +144,6 @@ return function(ownerUsername)
             table.insert(activeAutosaveThreads, thread)
             coroutine.resume(thread)
         end
-    
     
         local function removeAutosaves()
             autosavedUsers = {}
@@ -156,6 +187,10 @@ return function(ownerUsername)
                 ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
                 ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped grabbing.", "All")
             end
+            if string.sub(message, 1, 7) == ".combat" then
+                equipCombat()
+            end
+
         end
     
         Players.PlayerAdded:Connect(function(player)
