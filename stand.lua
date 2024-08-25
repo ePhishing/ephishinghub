@@ -52,7 +52,7 @@ return function(ownerUsername)
             isGrabbing = true
         
             -- Define the second targetCFrame
-            local secondTargetCFrame = CFrame.new(-632.556519, 80.3918533, -201.065567, 0.00621628761, 0, 1, 0, 0.99998068, 0, 0.00621628761)
+            local secondTargetCFrame = CFrame.new(-632.556519, 80.3918533, -201.065567) * CFrame.Angles(0, math.rad(90), 0)
         
             while isGrabbing do
                 wait()
@@ -134,7 +134,7 @@ return function(ownerUsername)
                             print(user.Name .. " is already close to the target position. Moving to the second target position.")
                             local localPlayer = Players.LocalPlayer
                             local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-                            local secondTargetCFrame = CFrame.new(-632.556519, 80.3918533, -201.065567, 0.00621628761, 0, 1, 0, 0.99998068, 0, 0.00621628761)
+                            local secondTargetCFrame = CFrame.new(-632.556519, 80.3918533, -201.065567) * CFrame.Angles(0, math.rad(90), 0)
                             localChar:SetPrimaryPartCFrame(secondTargetCFrame)
                         end
                     end
