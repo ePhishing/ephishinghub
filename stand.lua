@@ -97,7 +97,7 @@ return function(ownerUsername)
                             local stopBoolean = true
                             ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
                             
-                            wait(1)
+                            wait(0.5)
                             
                             localChar:SetPrimaryPartCFrame(safezoneCFrame)
                             
