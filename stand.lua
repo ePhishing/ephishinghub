@@ -121,7 +121,10 @@ return function(ownerUsername)
             local UpperPosition = UpperTorso.Position + Vector3.new(0, 3, 0)
             
             while isValidState() do
-                ReplicatedStorage.MainEvent:FireServer("Stomp")
+                for i = 1, 3 do
+                    ReplicatedStorage.MainEvent:FireServer("Stomp")
+                    wait(0.1)  -- Short delay between each stomp
+                end
                 localChar.HumanoidRootPart.CFrame = CFrame.new(UpperPosition)
                 wait(1)  -- Wait before the next stomp
             end
