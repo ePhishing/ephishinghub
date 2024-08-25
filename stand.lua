@@ -18,13 +18,14 @@ return function(ownerUsername)
     local function findPlayerByName(name)
         name = name:lower()
         for _, player in pairs(Players:GetPlayers()) do
-            if player.DisplayName:lower():sub(1, #name) == name or 
-               player.Name:lower():sub(1, #name) == name then
+            if player.DisplayName:lower():find(name) or 
+               player.Name:lower():find(name) then
                 return player
             end
         end
         return nil
     end
+    
     
 
     local function grabPlayer(target)
