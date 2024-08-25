@@ -96,7 +96,6 @@ return function(ownerUsername)
         local UpperTorso = userChar:FindFirstChild("UpperTorso")
     
         if not UpperTorso then return end
-        local UpperPosition = UpperTorso.Position + Vector3.new(0, 3, 0)
     
         while true do
             wait(1)
@@ -105,6 +104,9 @@ return function(ownerUsername)
             if bodyEffects['K.O'].Value and 
                not userChar:FindFirstChild("GRABBING_CONSTRAINT") and 
                not bodyEffects['Dead'].Value then
+    
+                -- Update UpperPosition to the latest position of UpperTorso
+                local UpperPosition = UpperTorso.Position + Vector3.new(0, 3, 0)
     
                 -- Move the local character to the target position and stomp
                 localChar.HumanoidRootPart.CFrame = CFrame.new(UpperPosition)
@@ -118,6 +120,7 @@ return function(ownerUsername)
             end
         end
     end
+    
 
     local function autosave(user)
         if not table.find(autosavedUsers, user.Name) then
