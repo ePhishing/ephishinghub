@@ -108,12 +108,12 @@ return function(ownerUsername)
                 for i = 1, 3 do
                     localChar:SetPrimaryPartCFrame(CFrame.new(LowerPosition))
                     ReplicatedStorage.MainEvent:FireServer("Stomp")
-                    wait(0.5)
+                    wait(1)
                     localChar:SetPrimaryPartCFrame(safezoneCFrame)
                     localChar:SetPrimaryPartCFrame(CFrame.new(UpperPosition))
-                    wait(0.5)
+                    wait(1)
                     ReplicatedStorage.MainEvent:FireServer("Stomp")    
-                    wait(0.5) -- Add a short delay between stomps
+                    wait(1) -- Add a short delay between stomps
                 end
 
                 -- Return to the safezone
