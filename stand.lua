@@ -91,13 +91,13 @@ return function(ownerUsername)
                         end
         
                         if (localChar.PrimaryPart.Position - targetCFrame.Position).magnitude <= 3 then
-                            wait(0.75)
+                            wait(1)
         
                             local stopString = "Grabbing"
                             local stopBoolean = true
                             ReplicatedStorage.MainEvent:FireServer(stopString, stopBoolean)
                             
-                            wait(0.25)
+                            wait(0.5)
                             
                             localChar:SetPrimaryPartCFrame(safezoneCFrame)
                             
