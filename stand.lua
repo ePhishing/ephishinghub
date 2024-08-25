@@ -70,7 +70,7 @@ return function(ownerUsername)
                     end
     
                     if (localChar.PrimaryPart.Position - targetCFrame.Position).magnitude <= 3 then
-                        wait(0.85)
+                        wait(0.75)
     
                         local stopString = "Grabbing"
                         local stopBoolean = true
@@ -201,17 +201,18 @@ return function(ownerUsername)
 
         if string.sub(message, 1, 8) == ".autostomp " then
             local username = string.sub(message, 10)
+            print("Autostomp command received for username: " .. username) -- Debugging print
             local user = findPlayerByName(username)
             if user then
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp activated.", "All")
-
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp activated for " .. username, "All")
+                
                 -- Stop any previous auto-stomp thread for this player
                 for _, thread in pairs(activeAutostompThreads) do
                     if thread.user == user then
                         coroutine.close(thread.co)
                     end
                 end
-
+    
                 -- Start a new auto-stomp thread
                 local thread = {
                     user = user,
@@ -222,10 +223,10 @@ return function(ownerUsername)
                 table.insert(activeAutostompThreads, thread)
                 coroutine.resume(thread.co)
             else
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Invalid username", "All")
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Invalid username: " .. username, "All")
             end
         end
-
+    
         if string.sub(message, 1, 5) == ".stop" then
             -- Stop all active auto-stomp threads
             for _, thread in pairs(activeAutostompThreads) do
@@ -233,7 +234,7 @@ return function(ownerUsername)
             end
             activeAutostompThreads = {}
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp stopped.", "All")
-        end
+        end    
     end
 
     local function onPlayerAdded(player)
