@@ -209,7 +209,7 @@ return function(ownerUsername)
         activeAutosaveThreads = {}
     end
 
-    local function onChatted(player, message)
+    local function onChatted(player, message, isWhisper)
         if player.Name ~= ownerUsername then return end
 
         if string.sub(message, 1, 6) == ".chat " then
@@ -283,14 +283,23 @@ return function(ownerUsername)
     end
     
 
-    local function onPlayerAdded(player)
+    -- Attach chat listener to all players
+    for _, player in pairs(Players:GetPlayers()) do
         player.Chatted:Connect(function(message)
-            onChatted(player, message)
+            onChatted(player, message, false)
+        end)
+        player.PrivateMessage:Connect(function(message)
+            onChatted(player, message, true)
         end)
     end
 
-    Players.PlayerAdded:Connect(onPlayerAdded)
-    for _, player in pairs(Players:GetPlayers()) do
-        onPlayerAdded(player)
-    end
+    -- Attach chat listener for new players
+    Players.PlayerAdded:Connect(function(player)
+        player.Chatted:Connect(function(message)
+            onChatted(player, message, false)
+        end)
+        player.PrivateMessage:Connect(function(message)
+            onChatted(player, message, true)
+        end)
+    end)
 end
