@@ -40,6 +40,8 @@ return function(ownerUsername)
         end
     end
 
+    monitorRespawn()
+
     localChar:SetPrimaryPartCFrame(safezoneCFrame)
 
     local function findPlayerByName(name)
@@ -280,8 +282,7 @@ return function(ownerUsername)
         end    
     end
     
-    monitorRespawn()
-    
+
     local function onPlayerAdded(player)
         player.Chatted:Connect(function(message)
             onChatted(player, message)
