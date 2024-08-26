@@ -4,8 +4,8 @@ return function(ownerUsername)
     local activeAutostompThreads = {}
     local activeAutosaveThreads = {}
     local isGrabbing = false
-    local safezoneCFrame = CFrame.new(0, -400, 0)  -- Updated safezone position
-    -- local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
+    --local safezoneCFrame = CFrame.new(0, -400, 0)  -- Updated safezone position
+    local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
     local targetCFrame = CFrame.new(-451.999084, 80.4387283, -207.518799, 0.7223894, 0, -0.69, 0, 1 ,0 , 0.691, 0, 0.72)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -13,21 +13,6 @@ return function(ownerUsername)
     local RunService = game:GetService("RunService")
     local localPlayer = Players.LocalPlayer
     local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-
-    -- Create a platform for the safezone
-    local function createSafezonePlatform()
-        local platform = Instance.new("Part")
-        platform.Name = "SafezonePlatform"
-        platform.Size = Vector3.new(1, 1, 1)  -- Size of the platform (adjust as needed)
-        platform.Position = safezoneCFrame.Position
-        platform.Anchored = true
-        platform.CanCollide = true
-        platform.BrickColor = BrickColor.new("Grey")  -- Color of the platform
-        platform.Parent = Workspace
-    end
-    
-    -- Call the function to create the platform
-    createSafezonePlatform()
 
     localChar:SetPrimaryPartCFrame(safezoneCFrame)
 
