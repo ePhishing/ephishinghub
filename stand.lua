@@ -14,6 +14,32 @@ return function(ownerUsername)
     local localPlayer = Players.LocalPlayer
     local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 
+    local function moveToSafezone()
+        local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+        localChar:SetPrimaryPartCFrame(safezoneCFrame)
+    end
+
+    -- Detect respawn and move to the safezone
+    local function monitorRespawn()
+        local function onCharacterAdded(character)
+            local bodyEffects = character:WaitForChild("BodyEffects")
+            local deadValue = bodyEffects:WaitForChild("Dead")
+
+            deadValue:GetPropertyChangedSignal("Value"):Connect(function()
+                if not deadValue.Value then
+                    moveToSafezone()
+                end
+            end)
+        end
+
+        localPlayer.CharacterAdded:Connect(onCharacterAdded)
+        
+        -- In case the player already has a character when the script runs
+        if localPlayer.Character then
+            onCharacterAdded(localPlayer.Character)
+        end
+    end
+
     localChar:SetPrimaryPartCFrame(safezoneCFrame)
 
     local function findPlayerByName(name)
@@ -253,7 +279,9 @@ return function(ownerUsername)
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp stopped.", "All")
         end    
     end
-
+    
+    monitorRespawn()
+    
     local function onPlayerAdded(player)
         player.Chatted:Connect(function(message)
             onChatted(player, message)
