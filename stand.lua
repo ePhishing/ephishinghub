@@ -296,16 +296,4 @@ return function(ownerUsername)
             onChatted(player, message)
         end)
     end)
-
-    -- Listen for whispers
-    localPlayer.Chatted:Connect(function(message)
-        if string.sub(message, 1, 1) == "/w" then
-            local username = string.match(message, "/w (%S+)")
-            local whisperedMessage = string.sub(message, string.find(message, username) + string.len(username) + 1)
-
-            if username == ownerUsername then
-                onChatted(Players:FindFirstChild(ownerUsername), whisperedMessage)
-            end
-        end
-    end)
 end
