@@ -89,8 +89,8 @@ return function(ownerUsername)
     
         -- Create an invisible part under the local player to simulate floating
         floatPart = Instance.new("Part")
-        Size = Vector3.new(2, 1, 2);
-        Anchored = true;ue
+        floatPart.Size = Vector3.new(2, 1, 2);
+        floatPart.Anchored = true;
         floatPart.Transparency = 1  -- Make the part invisible
         floatPart.Parent = workspace
     
