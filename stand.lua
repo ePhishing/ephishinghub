@@ -89,9 +89,8 @@ return function(ownerUsername)
     
         -- Create an invisible part under the local player to simulate floating
         floatPart = Instance.new("Part")
-        floatPart.Size = Vector3.new(4, 0.2, 4)
-        floatPart.Anchored = true
-        floatPart.CanCollide = true
+        Size = Vector3.new(2, 1, 2);
+        Anchored = true;ue
         floatPart.Transparency = 1  -- Make the part invisible
         floatPart.Parent = workspace
     
@@ -101,10 +100,10 @@ return function(ownerUsername)
                 local behindPosition = targetPosition - (targetCharacter.HumanoidRootPart.CFrame.lookVector * 2)
     
                 -- Update the float part position
-                floatPart.Position = behindPosition - Vector3.new(0, 3, 0)
+                floatPart.Position = behindPosition - Vector3.new(2, 1, 2)
     
                 -- Move the local player to float behind the target player
-                localCharacter.HumanoidRootPart.CFrame = CFrame.new(floatPart.Position + Vector3.new(0, 2.5, 0))
+                localCharacter.HumanoidRootPart.CFrame = CFrame.new(floatPart.Position + Vector3.new(2, 4, 2))
     
                 RunService.RenderStepped:Wait()
             end
