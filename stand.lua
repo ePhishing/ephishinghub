@@ -44,6 +44,61 @@ return function(ownerUsername)
 
     localChar:SetPrimaryPartCFrame(safezoneCFrame)
 
+    local activeFloatThread = nil
+    local floatPart = nil
+    
+    local function stopFloating()
+        if activeFloatThread then
+            coroutine.close(activeFloatThread)
+            activeFloatThread = nil
+        end
+        if floatPart then
+            floatPart:Destroy()
+            floatPart = nil
+        end
+    end
+    
+    local function startFloating(targetPlayerName)
+        local targetPlayer = Players:FindFirstChild(targetPlayerName)
+        if not targetPlayer then
+            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Target player not found.", "All")
+            return
+        end
+    
+        local targetCharacter = targetPlayer.Character
+        local localCharacter = LocalPlayer.Character
+    
+        if not targetCharacter or not localCharacter then
+            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Target or local character not found.", "All")
+            return
+        end
+    
+        -- Create an invisible part under the local player to simulate floating
+        floatPart = Instance.new("Part")
+        floatPart.Size = Vector3.new(4, 0.2, 4)
+        floatPart.Anchored = true
+        floatPart.CanCollide = true
+        floatPart.Transparency = 1  -- Make the part invisible
+        floatPart.Parent = workspace
+    
+        activeFloatThread = coroutine.create(function()
+            while true do
+                local targetPosition = targetCharacter.HumanoidRootPart.Position
+                local behindPosition = targetPosition - (targetCharacter.HumanoidRootPart.CFrame.lookVector * 2)
+    
+                -- Update the float part position
+                floatPart.Position = behindPosition - Vector3.new(0, 3, 0)
+    
+                -- Move the local player to float behind the target player
+                localCharacter.HumanoidRootPart.CFrame = CFrame.new(floatPart.Position + Vector3.new(0, 2.5, 0))
+    
+                RunService.RenderStepped:Wait()
+            end
+        end)
+    
+        coroutine.resume(activeFloatThread)
+    end
+
     local function findPlayerByName(name)
         name = name:lower()
         for _, player in pairs(Players:GetPlayers()) do
@@ -288,7 +343,13 @@ return function(ownerUsername)
             wait(0.3)
           until dropping == false
         end
+        if string.sub(message, 1, 2) == "S!" then
+            local targetPlayerName = "notephishing"
+            stopFloating()
+            startFloating(targetPlayerName)
+        game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Floating behind " .. targetPlayerName, "All")
         if string.sub(message, 1, 5) == "Kill!" then
+          stopFloating()
           dropping = false
           game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped dropping!","All")
         end
