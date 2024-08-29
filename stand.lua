@@ -370,6 +370,7 @@ return function(ownerUsername, alts)
             dropping = true
             repeat
             game.ReplicatedStorage.MainEvent:FireServer("DropMoney", 10000)
+            startFloating(targetPlayerName, alts)
             wait(0.3)
             until dropping == false
         end
