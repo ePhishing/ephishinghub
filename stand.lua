@@ -1,4 +1,4 @@
-return function(ownerUsername)
+return function(ownerUsername, alts)
     local autosavedUsers = {}
     local activeAutostompThreads = {}
     local activeAutosaveThreads = {}
@@ -72,7 +72,7 @@ return function(ownerUsername)
         end
     end
     
-    local function startFloating(targetPlayerName)
+    local function startFloating(targetPlayerName, altUsernames)
         local targetPlayer = Players:FindFirstChild(targetPlayerName)
         if not targetPlayer then
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Target player not found.", "All")
@@ -87,29 +87,46 @@ return function(ownerUsername)
             return
         end
     
-        -- Create an invisible part under the local player to simulate floating
-        floatPart = Instance.new("Part")
-        floatPart.Size = Vector3.new(4, 4, 4);
-        floatPart.Anchored = true;
-        floatPart.Transparency = 1  -- Make the part invisible
-        floatPart.Parent = workspace
+        -- Create a table to store floating parts for each alt
+        local floatParts = {}
+        
+        -- Create floating parts for each alt and start floating them
+        for i, altUsername in ipairs(altUsernames) do
+            local altPlayer = Players:FindFirstChild(altUsername)
+            if altPlayer then
+                local altCharacter = altPlayer.Character
+                if altCharacter then
+                    -- Create an invisible part under the alt player to simulate floating
+                    local part = Instance.new("Part")
+                    part.Size = Vector3.new(4, 4, 4)
+                    part.Anchored = true
+                    part.Transparency = 1  -- Make the part invisible
+                    part.Parent = workspace
+                    table.insert(floatParts, part)
     
-        activeFloatThread = coroutine.create(function()
-            while true do
-                local targetPosition = targetCharacter.HumanoidRootPart.Position
-                local behindPosition = targetPosition - (targetCharacter.HumanoidRootPart.CFrame.lookVector * 4)
+                    activeFloatThread = coroutine.create(function()
+                        while true do
+                            local targetPosition = targetCharacter.HumanoidRootPart.Position
+                            -- Calculate the distance based on the alt's position in the list
+                            local distanceBehind = i * 4  -- Increase the distance by 4 studs for each alt
+                            local behindPosition = targetPosition - (targetCharacter.HumanoidRootPart.CFrame.lookVector * distanceBehind)
+            
+                            -- Update the float part position
+                            part.Position = behindPosition - Vector3.new(4, 4, 4)
+            
+                            -- Move the alt player to float behind the target player
+                            altCharacter.HumanoidRootPart.CFrame = CFrame.new(part.Position + Vector3.new(4, 4, 4))
+            
+                            RunService.RenderStepped:Wait()
+                        end
+                    end)
     
-                -- Update the float part position
-                floatPart.Position = behindPosition - Vector3.new(4, 4, 4)
-    
-                -- Move the local player to float behind the target player
-                localCharacter.HumanoidRootPart.CFrame = CFrame.new(floatPart.Position + Vector3.new(4, 4, 4))
-    
-                RunService.RenderStepped:Wait()
+                    coroutine.resume(activeFloatThread)
+                end
+            else
+                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Alt player " .. altUsername .. " not found.", "All")
             end
-        end)
-    
-        coroutine.resume(activeFloatThread)
+        end
     end
 
     local function findPlayerByName(name)
@@ -141,7 +158,7 @@ return function(ownerUsername)
             not game.Players[target].Character.BodyEffects['Dead'].Value then
     
                 local targetChar = game.Players[target].Character
-                local targetPosition = targetChar.UpperTorso.Position + Vector3.new(0, 3, 0)
+                local targetPosition = targetChar.UpperTorso.Position + Vector3.new(0, 2, 0)
                 
                 -- Check if the local player is within 10 studs of the targetCFrame
                 local distanceToTarget = (targetPosition - targetCFrame.Position).magnitude
@@ -358,7 +375,7 @@ return function(ownerUsername)
         end
         if string.sub(message, 1, 2) == "S!" then
             stopFloating()
-            startFloating(targetPlayerName)
+            startFloating(targetPlayerName, alts)
             game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Floating behind " .. targetPlayerName, "All")
         end
         if string.sub(message, 1, 5) == "Kill!" then
