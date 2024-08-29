@@ -73,7 +73,7 @@ return function(ownerUsername)
             not game.Players[target].Character.BodyEffects['Dead'].Value then
     
                 local targetChar = game.Players[target].Character
-                local targetPosition = targetChar.UpperTorso.Position + Vector3.new(0, 3, 0)
+                local targetPosition = targetChar.UpperTorso.Position + Vector3.new(0, 2, 0)
                 
                 -- Check if the local player is within 10 studs of the targetCFrame
                 local distanceToTarget = (targetPosition - targetCFrame.Position).magnitude
