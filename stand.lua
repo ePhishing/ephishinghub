@@ -89,7 +89,7 @@ return function(ownerUsername)
     
         -- Create an invisible part under the local player to simulate floating
         floatPart = Instance.new("Part")
-        floatPart.Size = Vector3.new(2, 1, 2);
+        floatPart.Size = Vector3.new(4, 4, 4);
         floatPart.Anchored = true;
         floatPart.Transparency = 1  -- Make the part invisible
         floatPart.Parent = workspace
@@ -97,13 +97,13 @@ return function(ownerUsername)
         activeFloatThread = coroutine.create(function()
             while true do
                 local targetPosition = targetCharacter.HumanoidRootPart.Position
-                local behindPosition = targetPosition - (targetCharacter.HumanoidRootPart.CFrame.lookVector * 2)
+                local behindPosition = targetPosition - (targetCharacter.HumanoidRootPart.CFrame.lookVector * 4)
     
                 -- Update the float part position
-                floatPart.Position = behindPosition - Vector3.new(2, 1, 2)
+                floatPart.Position = behindPosition - Vector3.new(4, 4, 4)
     
                 -- Move the local player to float behind the target player
-                localCharacter.HumanoidRootPart.CFrame = CFrame.new(floatPart.Position + Vector3.new(2, 4, 2))
+                localCharacter.HumanoidRootPart.CFrame = CFrame.new(floatPart.Position + Vector3.new(4, 4, 4))
     
                 RunService.RenderStepped:Wait()
             end
@@ -365,6 +365,13 @@ return function(ownerUsername)
             stopFloating()
             dropping = false
             game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped dropping!","All")
+            localChar:SetPrimaryPartCFrame(safezoneCFrame)
+        end
+        if string.sub(message, 1, 7) == "Vanish!" then
+            stopFloating()
+            dropping = false
+            localChar:SetPrimaryPartCFrame(safezoneCFrame)
+            game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Vanished!","All")
         end
     end
     
