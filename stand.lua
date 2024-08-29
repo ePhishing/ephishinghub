@@ -4,6 +4,7 @@ return function(ownerUsername)
     local activeAutosaveThreads = {}
     local isGrabbing = false
     local dropping = false
+    local targetPlayerName = "notephishing"
     --local safezoneCFrame = CFrame.new(0, -400, 0)  -- Updated safezone position
     local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
     local targetCFrame = CFrame.new(-451.999084, 80.4387283, -207.518799, 0.7223894, 0, -0.69, 0, 1 ,0 , 0.691, 0, 0.72)
@@ -14,6 +15,8 @@ return function(ownerUsername)
     local localPlayer = Players.LocalPlayer
     local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
     local LocalPlayer = Players.LocalPlayer
+    local activeFloatThread = nil
+    local floatPart = nil
 
     local function moveToSafezone()
         local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
@@ -44,9 +47,6 @@ return function(ownerUsername)
     monitorRespawn()
 
     localChar:SetPrimaryPartCFrame(safezoneCFrame)
-
-    local activeFloatThread = nil
-    local floatPart = nil
     
     local function stopFloating()
         if activeFloatThread then
@@ -345,7 +345,6 @@ return function(ownerUsername)
             until dropping == false
         end
         if string.sub(message, 1, 2) == "S!" then
-            local targetPlayerName = "notephishing"
             stopFloating()
             startFloating(targetPlayerName)
             game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Floating behind " .. targetPlayerName, "All")
