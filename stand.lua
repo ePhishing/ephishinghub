@@ -61,6 +61,24 @@ return function(ownerUsername, alts)
 
     localChar:SetPrimaryPartCFrame(safezoneCFrame)
     
+    -- Function to create and position the invisible tool under the alts
+    local function createInvisibleToolForAlts(altCharacter)
+        local tool = Instance.new("Part")
+        tool.Size = Vector3.new(1, 1, 1)  -- Skinny tool size
+        tool.Anchored = true
+        tool.Transparency = 1  -- Invisible
+        tool.CanCollide = false
+        tool.Parent = workspace
+        
+        -- Position the tool 2 CFrames (studs) up under the alt
+        local altRootPart = altCharacter:FindFirstChild("HumanoidRootPart")
+        if altRootPart then
+            tool.CFrame = altRootPart.CFrame - Vector3.new(0, 2, 0)
+        end
+        
+        return tool
+    end
+
     local function stopFloating()
         if activeFloatThread then
             coroutine.close(activeFloatThread)
@@ -366,13 +384,30 @@ return function(ownerUsername, alts)
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp stopped.", "All")
         end
         if string.sub(message, 1, 5) == ".drop" then
-            game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Started Dropping!","All")
+            game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Started Dropping!", "All")
             dropping = true
+            
+            -- Create invisible tools for all alts
+            local tools = {}
+            for _, altUsername in ipairs(alts) do
+                local altPlayer = game.Players:FindFirstChild(altUsername)
+                if altPlayer and altPlayer.Character then
+                    table.insert(tools, createInvisibleToolForAlts(altPlayer.Character))
+                end
+            end
+            
             repeat
-            game.ReplicatedStorage.MainEvent:FireServer("DropMoney", 10000)
-            startFloating(targetPlayerName, alts)
-            wait(0.3)
+                -- Fire the drop money event
+                game.ReplicatedStorage.MainEvent:FireServer("DropMoney", 10000)
+                wait(0.3)
             until dropping == false
+            
+            -- Clean up tools after dropping is done
+            for _, tool in ipairs(tools) do
+                if tool then
+                    tool:Destroy()
+                end
+            end
         end
         if string.sub(message, 1, 2) == "S!" then
             stopFloating()
