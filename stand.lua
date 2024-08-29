@@ -361,6 +361,7 @@ return function(ownerUsername)
             stopFloating()
             startFloating(targetPlayerName)
             game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Floating behind " .. targetPlayerName, "All")
+        end
         if string.sub(message, 1, 5) == "Kill!" then
             stopFloating()
             dropping = false
