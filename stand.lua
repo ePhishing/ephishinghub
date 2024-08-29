@@ -3,7 +3,8 @@ return function(ownerUsername)
     local autosavedUsers = {}
     local activeAutostompThreads = {}
     local activeAutosaveThreads = {}
-    local isGrabbing = false
+    local isGrabbing = false)
+    dropping = false
     --local safezoneCFrame = CFrame.new(0, -400, 0)  -- Updated safezone position
     local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
     local targetCFrame = CFrame.new(-451.999084, 80.4387283, -207.518799, 0.7223894, 0, -0.69, 0, 1 ,0 , 0.691, 0, 0.72)
@@ -279,7 +280,19 @@ return function(ownerUsername)
             end
             activeAutostompThreads = {}
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp stopped.", "All")
-        end    
+        end
+        if string.sub(message, 1, 5) == ".drop" then
+          game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Started Dropping!","All")
+          dropping = true
+          repeat
+            game.ReplicatedStorage.MainEvent:FireServer("DropMoney", 10000)
+            wait(0.3)
+          until dropping == false
+        end
+        if string.sub(message, 1, 5) == "Kill!" then
+          dropping = false
+          game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped dropping!","All")
+        end
     end
     
 
