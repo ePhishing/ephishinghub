@@ -13,6 +13,7 @@ return function(ownerUsername)
     local RunService = game:GetService("RunService")
     local localPlayer = Players.LocalPlayer
     local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+    local LocalPlayer = Players.LocalPlayer
 
     local function moveToSafezone()
         local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
@@ -336,22 +337,22 @@ return function(ownerUsername)
             ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Auto-stomp stopped.", "All")
         end
         if string.sub(message, 1, 5) == ".drop" then
-          game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Started Dropping!","All")
-          dropping = true
-          repeat
+            game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Started Dropping!","All")
+            dropping = true
+            repeat
             game.ReplicatedStorage.MainEvent:FireServer("DropMoney", 10000)
             wait(0.3)
-          until dropping == false
+            until dropping == false
         end
         if string.sub(message, 1, 2) == "S!" then
             local targetPlayerName = "notephishing"
             stopFloating()
             startFloating(targetPlayerName)
-        game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Floating behind " .. targetPlayerName, "All")
+            game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Floating behind " .. targetPlayerName, "All")
         if string.sub(message, 1, 5) == "Kill!" then
-          stopFloating()
-          dropping = false
-          game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped dropping!","All")
+            stopFloating()
+            dropping = false
+            game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped dropping!","All")
         end
     end
     
