@@ -8,15 +8,28 @@ return function(ownerUsername)
     --local safezoneCFrame = CFrame.new(0, -400, 0)  -- Updated safezone position
     local safezoneCFrame = CFrame.new(-117.270287, -58.7000618, 146.536087, 0.999873519, 5.21876942e-08, -0.0159031227, -5.22713037e-08, 1, -4.84179008e-09, 0.0159031227, 5.67245495e-09, 0.999873519)
     local targetCFrame = CFrame.new(-451.999084, 80.4387283, -207.518799, 0.7223894, 0, -0.69, 0, 1 ,0 , 0.691, 0, 0.72)
+    
+    -- Fetch services
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Workspace = game:GetService("Workspace")
     local RunService = game:GetService("RunService")
+    
+    -- Define localPlayer and localChar
     local localPlayer = Players.LocalPlayer
     local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
     local LocalPlayer = Players.LocalPlayer
     local activeFloatThread = nil
     local floatPart = nil
+
+    print("safezoneCFrame:", safezoneCFrame)
+    print("targetCFrame:", targetCFrame)
+    print("Players:", Players)
+    print("ReplicatedStorage:", ReplicatedStorage)
+    print("Workspace:", Workspace)
+    print("RunService:", RunService)
+    print("localPlayer:", localPlayer)
+    print("localChar:", localChar)
 
     local function moveToSafezone()
         local localChar = localPlayer.Character or localPlayer.CharacterAdded:Wait()
