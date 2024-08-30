@@ -418,7 +418,6 @@ return function(ownerUsername, alts)
             stopFloating()
             dropping = false
             game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Stopped dropping!","All")
-            localChar:SetPrimaryPartCFrame(safezoneCFrame)
         end
         if string.sub(message, 1, 7) == "Vanish!" then
             stopFloating()
