@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
-local HostUsername = "notephishing" -- Replace with the actual host username
+local HostUsername = "5j8qd" -- Replace with the actual host username
 local TargetPlayer = nil
 local ToolEquipped = false
 local Attacking = false
